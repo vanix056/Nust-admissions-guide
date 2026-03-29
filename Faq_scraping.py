@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import json
 import time
+from pathlib import Path
 
 def scrape_nust_faqs(url):
     print(f"Scraping: {url}")
@@ -55,8 +56,10 @@ for link in urls:
     all_results.extend(data)
     time.sleep(1)
 
-# Save to file
-filename = 'nust_faq.json'
+# Save to file (always relative to this script's location)
+output_dir = Path(__file__).resolve().parent / 'data'
+output_dir.mkdir(parents=True, exist_ok=True)
+filename = output_dir / 'nust_faq.json'
 with open(filename, 'w', encoding='utf-8') as f:
     json.dump(all_results, f, indent=4, ensure_ascii=False)
 
