@@ -1,0 +1,28 @@
+{
+  "source_faq": "../approach2/data/nust_faq.json",
+  "unique_links": 21,
+  "scraped_ok": 1,
+  "scraped_failed": 20,
+  "failed_links": {
+    "https://nust.edu.pk/admissions/undergraduates/academic-qualification-required-for-different-ug-progammes/": "403 Client Error: Forbidden for url: https://nust.edu.pk/admissions/undergraduates/academic-qualification-required-for-different-ug-progammes/",
+    "https://nust.edu.pk/admissions/NSHS/how-to-apply/": "403 Client Error: Forbidden for url: https://nust.edu.pk/admissions/NSHS/how-to-apply/",
+    "https://nust.edu.pk/admissions/undergraduates/international-students/": "403 Client Error: Forbidden for url: https://nust.edu.pk/admissions/undergraduates/international-students/",
+    "https://ibcc.edu.pk/rules-for-equivalence/": "403 Client Error: Forbidden for url: https://ibcc.edu.pk/rules-for-equivalence/",
+    "https://nust.edu.pk/admissions/undergraduates/dae-eligibility-criteria/": "403 Client Error: Forbidden for url: https://nust.edu.pk/admissions/undergraduates/dae-eligibility-criteria/",
+    "https://nust.edu.pk/admissions/undergraduates/subjects-included-in-net-with-weightings/": "403 Client Error: Forbidden for url: https://nust.edu.pk/admissions/undergraduates/subjects-included-in-net-with-weightings/",
+    "https://nust.edu.pk/admissions/alliedprogram/admission-criteria/": "403 Client Error: Forbidden for url: https://nust.edu.pk/admissions/alliedprogram/admission-criteria/",
+    "https://nust.edu.pk/admissions/alliedprogram/dates-to-remember/": "403 Client Error: Forbidden for url: https://nust.edu.pk/admissions/alliedprogram/dates-to-remember/",
+    "https://nust.edu.pk/admissions/undergraduates/applying-on-the-basis-of-scholastic-aptitude-test-sat/": "403 Client Error: Forbidden for url: https://nust.edu.pk/admissions/undergraduates/applying-on-the-basis-of-scholastic-aptitude-test-sat/",
+    "https://nust.edu.pk/admissions/undergraduates/eligibility-criteria-for-ug-programmes/": "403 Client Error: Forbidden for url: https://nust.edu.pk/admissions/undergraduates/eligibility-criteria-for-ug-programmes/",
+    "https://nust.edu.pk/admissions/NSHS/fee-structure/": "403 Client Error: Forbidden for url: https://nust.edu.pk/admissions/NSHS/fee-structure/",
+    "https://nust.edu.pk/admissions/alliedprogram/fee-structure-bshnd/": "403 Client Error: Forbidden for url: https://nust.edu.pk/admissions/alliedprogram/fee-structure-bshnd/",
+    "https://nust.edu.pk/admissions/fee-structure/undergraduate-financial-matters/": "403 Client Error: Forbidden for url: https://nust.edu.pk/admissions/fee-structure/undergraduate-financial-matters/",
+    "https://nust.edu.pk/admissions/NSHS/merit-generation-criteria-mbbs/": "403 Client Error: Forbidden for url: https://nust.edu.pk/admissions/NSHS/merit-generation-criteria-mbbs/",
+    "https://nust.edu.pk/admissions/undergraduates/subjects-included-in-net-with-weightings": "403 Client Error: Forbidden for url: https://nust.edu.pk/admissions/undergraduates/subjects-included-in-net-with-weightings",
+    "https://rb.gy/j0b5ds": "403 Client Error: Forbidden for url: https://rb.gy/j0b5ds",
+    "https://rb.gy/9ntumc": "403 Client Error: Forbidden for url: https://rb.gy/9ntumc",
+    "https://ugadmissions.nust.edu.pk/result/default": "403 Client Error: Forbidden for url: https://ugadmissions.nust.edu.pk/result/default",
+    "https://rb.gy/f6a26": "403 Client Error: Forbidden for url: https://rb.gy/f6a26",
+    "https://campuslife.nust.edu.pk/facility-and-amenity/housing-and-dining/": "403 Client Error: Forbidden for url: https://campuslife.nust.edu.pk/facility-and-amenity/housing-and-dining/"
+  }
+}

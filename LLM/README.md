@@ -64,3 +64,26 @@ export LLM_MODEL_PATH="/absolute/path/to/your-model.gguf"
 
 - This app is offline-first (`HF_HUB_OFFLINE=1`, `TRANSFORMERS_OFFLINE=1`).
 - For typo-heavy queries, retrieval uses both semantic and fuzzy evidence before LLM generation.
+
+## Offline answers for link-based FAQs
+
+To avoid replying with raw links when users are offline, this app uses local link knowledge:
+
+- Source file: `data/link_offline_knowledge.json`
+- During FAQ load, answers containing links are replaced with local offline summaries.
+
+This means many link-only answers are converted to direct text responses without internet.
+
+### Refresh workflow
+
+1. Update `data/link_offline_knowledge.json` with new extracted page summaries.
+2. Restart Streamlit app.
+
+Optional helper script available:
+
+```bash
+cd LLM
+/opt/anaconda3/bin/python build_offline_link_answers.py
+```
+
+Note: some official sites may block direct scraping (HTTP 403). In that case, keep `link_offline_knowledge.json` as the authoritative offline store.
