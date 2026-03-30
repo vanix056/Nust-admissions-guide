@@ -55,10 +55,14 @@ python main.py
 ## Run Streamlit Live Demo
 
 ```bash
-streamlit run streamlit_app.py
+streamlit run app.py
 ```
 
 This opens a chat-style UI in your browser for live demos.
+
+Logo path used by the UI:
+
+- `assets/nust_logo.png`
 
 Example:
 

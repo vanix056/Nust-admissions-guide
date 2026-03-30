@@ -5,9 +5,19 @@ def run() -> None:
     bot = build_default_chatbot()
 
     samples = [
+        "hi",
+        "hello",
+        "how are you",
+        "who are you",
+        "what do you do",
+        "how can you help me",
+        "Hi, what is the deadline?",
         "Is there any age limit for undergraduate admission?",
+        "whats the fee structure for mbbs program",
         "Is there hostel facility and what is fee structure for MBBS programme?",
         "Do you offer aviation pilot admissions?",
+        "tell me about scholarship in harvard",
+        "good bye",
         "",
     ]
 

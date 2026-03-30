@@ -4,6 +4,7 @@ from typing import Dict, List
 import faiss
 import numpy as np
 from rank_bm25 import BM25Okapi
+from rapidfuzz import fuzz, process
 from sentence_transformers import SentenceTransformer
 
 from data_loader import FAQEntry
@@ -35,6 +36,7 @@ class HybridRetriever:
         self.semantic_weight = semantic_weight
         self.keyword_weight = keyword_weight
         self.exact_lookup = {entry.normalized_question: entry for entry in entries}
+        self.normalized_questions = [entry.normalized_question for entry in entries]
 
         self.model = SentenceTransformer(model_name, local_files_only=local_files_only)
         self.embeddings = self._build_embeddings()
@@ -81,6 +83,22 @@ class HybridRetriever:
                 )
             ]
 
+        fuzzy_match = process.extractOne(
+            sub_query,
+            self.normalized_questions,
+            scorer=fuzz.WRatio,
+        )
+        if fuzzy_match and fuzzy_match[1] >= 93:
+            matched_question = fuzzy_match[0]
+            return [
+                RetrievalHit(
+                    entry=self.exact_lookup[matched_question],
+                    semantic_score=0.92,
+                    keyword_score=0.92,
+                    final_score=0.92,
+                )
+            ]
+
         query_tokens = sub_query.split()
         query_vec = self.model.encode(
             [sub_query],
@@ -90,9 +108,10 @@ class HybridRetriever:
         ).astype(np.float32)
 
         safe_top_k = max(1, min(top_k, len(self.entries)))
+        expanded_top_k = min(len(self.entries), max(safe_top_k, 25))
 
         # Semantic retrieval (cosine via normalized vectors + inner product).
-        sem_scores, sem_indices = self.faiss_index.search(query_vec, safe_top_k)
+        sem_scores, sem_indices = self.faiss_index.search(query_vec, expanded_top_k)
         sem_scores = sem_scores[0]
         sem_indices = sem_indices[0]
 
@@ -105,7 +124,7 @@ class HybridRetriever:
         bm25_raw = np.array(self.bm25.get_scores(query_tokens), dtype=np.float32)
         bm25_norm = self._minmax(bm25_raw)
 
-        bm25_top_indices = np.argsort(-bm25_raw)[:safe_top_k]
+        bm25_top_indices = np.argsort(-bm25_raw)[:expanded_top_k]
         keyword_map: Dict[int, float] = {
             int(idx): float(np.clip(bm25_norm[idx], 0.0, 1.0)) for idx in bm25_top_indices
         }
