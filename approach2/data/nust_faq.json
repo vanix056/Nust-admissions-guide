@@ -570,5 +570,9 @@
     {
         "question": "Which admission tests are acceptable for admission in BSHND programme?",
         "answer": "For Open Merit SeatsNET-Applied Sciences, NUMS MDCAT, National MDCAT. For ACT Based Seats: ACT Test"
+    },
+    {
+        "question":"How long is Nust Entry Test (NET)",
+        "answer":"The NET is to be attempted in three hours (180 minutes)."
     }
 ]

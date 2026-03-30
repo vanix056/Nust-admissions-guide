@@ -13,6 +13,31 @@ This implementation uses a local GGUF LLM as the **primary** answer engine and g
 4. Sends retrieved FAQ context to local LLM (`llama-cpp-python`) to generate grounded answer
 5. Falls back safely if confidence is too low or LLM fails
 
+## Performance modes
+
+- Fast (recommended): skips LLM generation and returns grounded FAQ answers quickly.
+- Accurate (LLM, slower): uses local LLM generation for nuanced responses, but may be much slower on CPU.
+
+Choose mode from the app UI using the Response mode selector.
+
+## Speed up LLM mode
+
+Use these options to improve LLM speed on macOS:
+
+1. Enable GPU offload (Metal build of llama-cpp):
+
+```bash
+export LLM_N_GPU_LAYERS=-1
+```
+
+2. Keep Fast mode for high-volume traffic, switch to Accurate mode only when needed.
+
+3. Keep model and app on local SSD and avoid running extra heavy apps in parallel.
+
+Notes:
+- In this project, LLM speed is already tuned with smaller context and token limits.
+- If `LLM_N_GPU_LAYERS=-1` is unsupported in your build, set it to `0`.
+
 ## Run
 
 ```bash

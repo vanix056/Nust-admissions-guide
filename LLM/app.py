@@ -32,9 +32,9 @@ MIN_FUZZY_CONF = 62
 # Speed controls
 FAST_RETURN_SEMANTIC = 0.66
 FAST_RETURN_FUZZY = 84
-LLM_TOP_K = 4
-LLM_MAX_TOKENS = 140
-LLM_CTX_SIZE = 2048
+LLM_TOP_K = 3
+LLM_MAX_TOKENS = 96
+LLM_CTX_SIZE = 1536
 
 UNKNOWN_MESSAGE = (
     "I could not find a reliable answer in the official NUST FAQ knowledge base. "
@@ -122,9 +122,29 @@ def score_faq_relevance(query: str, question: str, semantic_score: float) -> flo
     return max(0, combined)
 
 
-def _is_fee_intent(query_norm: str) -> bool:
+def _is_general_fee_structure_intent(query_norm: str) -> bool:
+    """Detect generic fee-structure queries (not NET/refund-specific)."""
     tokens = set(re.findall(r"[a-z0-9]+", query_norm))
-    return "fee" in tokens or ("fee" in query_norm and "structure" in query_norm)
+    if "fee" not in tokens:
+        return False
+
+    specific_tokens = {
+        "net",
+        "entry",
+        "test",
+        "refundable",
+        "refund",
+        "application",
+        "processing",
+        "security",
+        "deposit",
+        "selected",
+    }
+
+    if tokens.intersection(specific_tokens):
+        return False
+
+    return ("structure" in tokens) or (len(tokens) <= 3)
 
 
 def _general_fee_faq_index(questions: List[str], answers: List[str]) -> int:
@@ -136,6 +156,35 @@ def _general_fee_faq_index(questions: List[str], answers: List[str]) -> int:
         q = normalize_text(question)
         if "fee structure" in q and ("different" in q or "ug" in q or "undergraduate" in q):
             return i
+
+    return -1
+
+
+def _intent_override_index(query_norm: str, questions: List[str], answers: List[str]) -> int:
+    """Route clear intents to exact FAQ entries for precision and speed."""
+    tokens = set(re.findall(r"[a-z0-9]+", query_norm))
+
+    def find_best(match_fn) -> int:
+        for i, (q, a) in enumerate(zip(questions, answers)):
+            if match_fn(normalize_text(q), normalize_text(a)):
+                return i
+        return -1
+
+    # Refundability of admission/application processing fee.
+    if "fee" in tokens and tokens.intersection({"refund", "refundable", "selected", "join"}):
+        idx = find_best(lambda q, a: "refundable" in q and "admission processing fee" in q)
+        if idx >= 0:
+            return idx
+
+    # NET fee for Pakistani nationals.
+    if "fee" in tokens and "net" in tokens:
+        idx = find_best(
+            lambda q, a: "application processing fee" in q
+            and "nust entry test" in a
+            and ("pakistani" in a or "pakistani" in q)
+        )
+        if idx >= 0:
+            return idx
 
     return -1
 
@@ -174,7 +223,7 @@ def _resolve_model_path() -> Path:
 
 
 @st.cache_resource(show_spinner=False)
-def response_cache() -> Dict[str, Tuple[str, Dict[str, str]]]:
+def response_cache() -> Dict[Tuple[str, bool], Tuple[str, Dict[str, str]]]:
     """Simple in-memory cache for repeated normalized queries."""
     return {}
 
@@ -283,11 +332,15 @@ def load_llm():
 
     model_path = _resolve_model_path()
     cpu_threads = max(2, min(8, (os.cpu_count() or 4)))
+    # On macOS builds with Metal enabled, set LLM_N_GPU_LAYERS=-1 for significant speedups.
+    n_gpu_layers = int(os.getenv("LLM_N_GPU_LAYERS", "0"))
     return Llama(
         model_path=str(model_path),
         n_ctx=LLM_CTX_SIZE,
         n_threads=cpu_threads,
         n_batch=256,
+        n_gpu_layers=n_gpu_layers,
+        f16_kv=True,
         temperature=0,
         verbose=False,
     )
@@ -366,7 +419,7 @@ def retrieve_candidate_indices(
     ordered = [idx for _, idx in ranked]
 
     # Fee-intent safety: include general fee FAQ at front for generic fee questions.
-    if _is_fee_intent(query_for_match):
+    if _is_general_fee_structure_intent(query_for_match):
         fee_idx = _general_fee_faq_index(questions, answers)
         if fee_idx >= 0 and not any(k in query_for_match for k in ["bshnd", "mbbs", "nshs"]):
             ordered = [fee_idx] + [i for i in ordered if i != fee_idx]
@@ -402,12 +455,38 @@ def _strip_generation_artifacts(text: str) -> str:
     cleaned = cleaned.replace("<|assistant|>", "")
     cleaned = cleaned.replace("Solution:", "")
     cleaned = cleaned.replace("Final Answer:", "")
+    cleaned = re.sub(r"==[^=]+==", " ", cleaned)
     cleaned = re.sub(r"\s+", " ", cleaned).strip()
     return cleaned
 
 
 def _extract_links(text: str) -> List[str]:
     return re.findall(r"https?://[^\s)]+", text)
+
+
+def split_compound_query(query: str) -> List[str]:
+    """Split multi-part/numbered user input into separate questions."""
+    if not query or not query.strip():
+        return []
+
+    text = query.replace("\r\n", "\n").replace("\r", "\n").strip()
+
+    # Case 1: multi-line with numbering like "6. ..."
+    if "\n" in text:
+        parts = []
+        for line in [ln.strip() for ln in text.split("\n") if ln.strip()]:
+            cleaned = re.sub(r"^\d+[\)\.\-:\s]*", "", line).strip()
+            if cleaned:
+                parts.append(cleaned)
+        if len(parts) > 1:
+            return parts
+
+    # Case 2: one line containing multiple questions.
+    question_chunks = [p.strip() for p in re.split(r"\?\s*", text) if p.strip()]
+    if len(question_chunks) > 1:
+        return [p if p.endswith("?") else f"{p}?" for p in question_chunks]
+
+    return [text]
 
 
 def llm_grounded_answer(query: str, prompt: str, allowed_links: List[str]) -> str:
@@ -432,11 +511,12 @@ def llm_grounded_answer(query: str, prompt: str, allowed_links: List[str]) -> st
     return format_answer_text(text)
 
 
-def get_answer(
+def _get_single_answer(
     query: str,
     index: faiss.IndexFlatIP,
     entries: List[Dict[str, str]],
     questions: List[str],
+    use_llm_generation: bool = False,
 ) -> Tuple[str, Dict[str, str]]:
     if not query or not query.strip():
         return "Please enter your admissions question first.", {
@@ -455,7 +535,17 @@ def get_answer(
 
     vocab = build_question_vocab(questions)
     query_for_match = normalize_query_for_matching(query, vocab)
-    cached = response_cache().get(query_for_match)
+
+    override_idx = _intent_override_index(query_for_match, questions, [e["answer"] for e in entries])
+    if override_idx >= 0:
+        return format_answer_text(entries[override_idx]["answer"]), {
+            "source": "intent_override",
+            "confidence": "intent",
+            "matched_question": entries[override_idx]["question"],
+        }
+
+    cache_key = (query_for_match, use_llm_generation)
+    cached = response_cache().get(cache_key)
     if cached:
         return cached
 
@@ -467,13 +557,13 @@ def get_answer(
             "confidence": f"semantic={best_sem:.3f}, fuzzy={best_fuzzy:.1f}",
             "matched_question": "",
         })
-        response_cache()[query_for_match] = result
+        response_cache()[cache_key] = result
         return result
 
     top_idx = candidate_indices[0] if candidate_indices else 0
 
-    # Fast-path: for very confident retrieval, skip LLM generation.
-    if best_sem >= FAST_RETURN_SEMANTIC or best_fuzzy >= FAST_RETURN_FUZZY:
+    # Fast-path: for very confident retrieval, skip LLM generation in Fast mode only.
+    if (not use_llm_generation) and (best_sem >= FAST_RETURN_SEMANTIC or best_fuzzy >= FAST_RETURN_FUZZY):
         result = (
             format_answer_text(entries[top_idx]["answer"]),
             {
@@ -482,7 +572,20 @@ def get_answer(
                 "matched_question": entries[top_idx]["question"],
             },
         )
-        response_cache()[query_for_match] = result
+        response_cache()[cache_key] = result
+        return result
+
+    # Optional speed mode: skip LLM even on medium-confidence queries.
+    if not use_llm_generation:
+        result = (
+            format_answer_text(entries[top_idx]["answer"]),
+            {
+                "source": "retrieval_only",
+                "confidence": f"semantic={best_sem:.3f}, fuzzy={best_fuzzy:.1f}",
+                "matched_question": entries[top_idx]["question"],
+            },
+        )
+        response_cache()[cache_key] = result
         return result
 
     prompt = build_grounded_prompt(query, candidate_indices, entries)
@@ -503,7 +606,7 @@ def get_answer(
             "matched_question": entries[top_idx]["question"],
             "error": str(exc),
         })
-        response_cache()[query_for_match] = result
+        response_cache()[cache_key] = result
         return result
 
     # If generation is empty after guardrails, use top grounded FAQ.
@@ -513,19 +616,19 @@ def get_answer(
             "confidence": f"semantic={best_sem:.3f}, fuzzy={best_fuzzy:.1f}",
             "matched_question": entries[top_idx]["question"],
         })
-        response_cache()[query_for_match] = result
+        response_cache()[cache_key] = result
         return result
 
     # Additional safety: generic fee queries should not drift to specific programs.
     qn = normalize_text(query_for_match)
-    if _is_fee_intent(qn) and not any(k in qn for k in ["bshnd", "mbbs", "nshs"]):
+    if _is_general_fee_structure_intent(qn) and not any(k in qn for k in ["bshnd", "mbbs", "nshs"]):
         if any(k in normalize_text(answer) for k in ["bshnd", "mbbs", "nshs"]):
             result = (format_answer_text(entries[top_idx]["answer"]), {
                 "source": "faq_fallback_after_guardrail",
                 "confidence": f"semantic={best_sem:.3f}, fuzzy={best_fuzzy:.1f}",
                 "matched_question": entries[top_idx]["question"],
             })
-            response_cache()[query_for_match] = result
+            response_cache()[cache_key] = result
             return result
 
     elapsed_ms = int((time.perf_counter() - start) * 1000)
@@ -534,8 +637,51 @@ def get_answer(
         "confidence": f"semantic={best_sem:.3f}, fuzzy={best_fuzzy:.1f}, llm_ms={elapsed_ms}",
         "matched_question": entries[top_idx]["question"],
     })
-    response_cache()[query_for_match] = result
+    response_cache()[cache_key] = result
     return result
+
+
+def get_answer(
+    query: str,
+    index: faiss.IndexFlatIP,
+    entries: List[Dict[str, str]],
+    questions: List[str],
+    use_llm_generation: bool = False,
+) -> Tuple[str, Dict[str, str]]:
+    parts = split_compound_query(query)
+    if not parts:
+        return "Please enter your admissions question first.", {
+            "source": "empty_query",
+            "confidence": "0.0",
+            "matched_question": "",
+        }
+
+    # Single question path keeps existing behavior.
+    if len(parts) == 1:
+        return _get_single_answer(parts[0], index, entries, questions, use_llm_generation=use_llm_generation)
+
+    # Compound path: answer each part independently, then compose.
+    combined_blocks = []
+    matched = []
+    confidence_items = []
+    llm_used = False
+    for i, part in enumerate(parts, start=1):
+        ans, meta = _get_single_answer(part, index, entries, questions, use_llm_generation=use_llm_generation)
+        combined_blocks.append(f"{i}. {ans}")
+        m = meta.get("matched_question", "")
+        if m:
+            matched.append(m)
+        c = meta.get("confidence", "")
+        if c:
+            confidence_items.append(c)
+        if meta.get("source") == "llm_grounded":
+            llm_used = True
+
+    return "\n\n".join(combined_blocks), {
+        "source": "compound_llm" if llm_used else "compound_retrieval",
+        "confidence": " | ".join(confidence_items[:3]),
+        "matched_question": " | ".join(matched[:2]),
+    }
 
 
 def source_note(meta: Dict[str, str]) -> str:
@@ -549,6 +695,14 @@ def source_note(meta: Dict[str, str]) -> str:
         return f"Source: Guardrailed fallback to top grounded FAQ ({conf})."
     if src == "fast_retrieval":
         return f"Source: Fast retrieval mode (LLM skipped) ({conf})."
+    if src == "retrieval_only":
+        return f"Source: Retrieval-only mode (LLM disabled) ({conf})."
+    if src == "intent_override":
+        return "Source: Intent-aware exact FAQ routing."
+    if src == "compound_retrieval":
+        return f"Source: Compound query split + retrieval mode ({conf})."
+    if src == "compound_llm":
+        return f"Source: Compound query split + LLM mode ({conf})."
     if src == "small_talk":
         return "Source: Conversational assistant behavior."
     if src == "empty_query":
@@ -593,6 +747,14 @@ def main() -> None:
     st.caption(f"FAQ: {faq_path}")
     st.caption(f"LLM: {model_path}")
 
+    speed_mode = st.radio(
+        "Response mode",
+        options=["Fast (recommended)", "Accurate (LLM, slower)"],
+        horizontal=True,
+        help="Fast mode skips LLM generation and returns grounded FAQ answers quickly. Accurate mode uses LLM and may be much slower on CPU.",
+    )
+    use_llm_generation = speed_mode == "Accurate (LLM, slower)"
+
     if "history" not in st.session_state:
         st.session_state.history = []
 
@@ -601,7 +763,7 @@ def main() -> None:
         submitted = st.form_submit_button("Ask")
 
     if submitted:
-        answer, meta = get_answer(query, index, entries, questions)
+        answer, meta = get_answer(query, index, entries, questions, use_llm_generation=use_llm_generation)
         st.session_state.history.append({"query": query, "answer": answer, "meta": meta})
 
     if st.session_state.history:
