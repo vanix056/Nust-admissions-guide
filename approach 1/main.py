@@ -6,9 +6,10 @@ from typing import List
 
 from data_loader import FAQEntry, load_faq_entries
 from intent import detect_intent, get_conversational_response
+from fuzzy_matcher import apply_typo_correction, fuzzy_match_query_to_faq
 from processor import normalize_text, process_query
 from responder import QueryResult, build_response
-from retriever import HybridRetriever
+from retriever import HybridRetriever, RetrievalHit
 
 
 _STOPWORDS = {
@@ -52,10 +53,10 @@ _URL_REGEX = re.compile(r"https?://[^\s]+")
 @dataclass(frozen=True)
 class ChatbotConfig:
     faq_path: Path
-    score_threshold: float = 0.7
+    score_threshold: float = 0.65
     min_keyword_score: float = 0.1
-    min_semantic_score: float = 0.9
-    min_score_gap: float = 0.06
+    min_semantic_score: float = 0.75
+    min_score_gap: float = 0.02
     top_k: int = 5
 
 
@@ -65,6 +66,194 @@ class OfflineAdmissionsChatbot:
         self.entries: List[FAQEntry] = load_faq_entries(str(config.faq_path))
         self.retriever = HybridRetriever(self.entries, local_files_only=True)
         self.support_contact_line = self._build_support_contact_line(self.entries)
+        self.general_fee_entry = self._find_general_fee_entry(self.entries)
+        self.entry_by_question = {entry.normalized_question: entry for entry in self.entries}
+
+    @staticmethod
+    def _find_general_fee_entry(entries: List[FAQEntry]) -> FAQEntry | None:
+        preferred = [
+            entry
+            for entry in entries
+            if "fee structure of different ug programmes" in entry.normalized_question
+        ]
+        if preferred:
+            return preferred[0]
+
+        fallback = [entry for entry in entries if "fee structure" in entry.normalized_question]
+        return fallback[0] if fallback else None
+
+    @staticmethod
+    def _is_generic_fee_query(sub_query: str) -> bool:
+        text = normalize_text(sub_query)
+        tokens = set(text.split())
+        if not tokens:
+            return False
+
+        fee_words = {"fee", "fees", "cost", "charges", "tuition", "payment", "structure"}
+        specific_program_words = {
+            "mbbs",
+            "bshnd",
+            "nshs",
+            "engineering",
+            "medical",
+            "programme",
+            "program",
+            "bba",
+            "mba",
+            "ms",
+            "phd",
+        }
+        school_words = {"seecs", "s3h", "nbs", "nsm", "nice", "nust"}
+        specific_fee_context = {
+            "application",
+            "processing",
+            "refundable",
+            "refund",
+            "net",
+            "mdcat",
+            "pakistani",
+            "national",
+            "international",
+            "online",
+        }
+
+        has_fee = bool(tokens.intersection(fee_words))
+        has_specific_program = bool(tokens.intersection(specific_program_words))
+        has_school_reference = bool(tokens.intersection(school_words))
+        has_specific_context = bool(tokens.intersection(specific_fee_context))
+
+        # Generic requests like "what is fee at nust/seecs" should resolve to general fee page.
+        return has_fee and not has_specific_context and (not has_specific_program or has_school_reference)
+
+    @staticmethod
+    def _is_vague_fragment(sub_query: str) -> bool:
+        text = normalize_text(sub_query)
+        vague_phrases = {
+            "what happens",
+            "then what",
+            "how long is it",
+            "what then",
+        }
+        if text in vague_phrases:
+            return True
+
+        tokens = [tok for tok in text.split() if tok not in _STOPWORDS]
+        return len(tokens) <= 1
+
+    def _pick_general_fee_hit(self, hits: List[RetrievalHit]) -> RetrievalHit | None:
+        if not hits:
+            return None
+
+        preferred = [
+            hit
+            for hit in hits
+            if "fee structure" in hit.entry.normalized_question
+            and (
+                "different ug programmes" in hit.entry.normalized_question
+                or "different undergraduate" in hit.entry.normalized_question
+            )
+        ]
+        if preferred:
+            return preferred[0]
+
+        broad = [
+            hit
+            for hit in hits
+            if "fee structure" in hit.entry.normalized_question and "mbbs" not in hit.entry.normalized_question
+        ]
+        if broad:
+            return broad[0]
+
+        return None
+
+    def _anchor_entry_for_query(self, sub_query: str) -> FAQEntry | None:
+        text = normalize_text(sub_query)
+        tokens = set(text.split())
+        if not tokens:
+            return None
+
+        if (
+            ("a" in tokens or "alevel" in tokens or "levels" in tokens or "level" in tokens)
+            and ("final" in tokens or "result" in tokens)
+            and ("apply" in tokens or "admission" in tokens)
+        ):
+            return next(
+                (
+                    entry
+                    for entry in self.entries
+                    if "final year of a level" in entry.normalized_question
+                ),
+                None,
+            )
+
+        if (
+            ("missed" in tokens or "could" in tokens)
+            and ("net" in tokens or "test" in tokens)
+            and ("reschedule" in tokens or "other" in tokens or "another" in tokens)
+        ):
+            return next(
+                (
+                    entry
+                    for entry in self.entries
+                    if "could not appear in nust entry test" in entry.normalized_question
+                ),
+                None,
+            )
+
+        if (
+            ("installment" in tokens or "installments" in tokens)
+            and ("tuition" in tokens or "fee" in tokens)
+        ):
+            return next(
+                (
+                    entry
+                    for entry in self.entries
+                    if "installment plan for the payment of tuition fee"
+                    in entry.normalized_question
+                ),
+                None,
+            )
+
+        # Route practical student phrasing to explicit fee-policy FAQ entries.
+        if {"fee", "application"}.issubset(tokens) and (
+            "refundable" in tokens or "refund" in tokens
+        ):
+            return next(
+                (
+                    entry
+                    for entry in self.entries
+                    if "admission processing fee" in entry.normalized_question
+                    and "refundable" in entry.normalized_question
+                ),
+                None,
+            )
+
+        if "fee" in tokens and (
+            "net" in tokens or "pakistani" in tokens or "national" in tokens
+        ):
+            return next(
+                (
+                    entry
+                    for entry in self.entries
+                    if "application processing fee for online registration for admission"
+                    in entry.normalized_question
+                ),
+                None,
+            )
+
+        if {"application", "processing", "fee"}.issubset(tokens) and (
+            "online" in tokens or "pay" in tokens or "submit" in tokens
+        ):
+            return next(
+                (
+                    entry
+                    for entry in self.entries
+                    if "submit the application processing fee" in entry.normalized_question
+                ),
+                None,
+            )
+
+        return None
 
     def _build_support_contact_line(self, entries: List[FAQEntry]) -> str:
         # Prioritize records that explicitly discuss admissions contact details.
@@ -174,19 +363,70 @@ class OfflineAdmissionsChatbot:
         if intent != "faq_query":
             return get_conversational_response(intent)
 
-        sub_queries = process_query(query)
+        # Apply typo correction first for common student mistakes
+        corrected_query = apply_typo_correction(query)
+
+        sub_queries = process_query(corrected_query)
         if not sub_queries:
             return "Please enter a question."
 
         # For mixed prompts (e.g., "hi, what is deadline"), keep only FAQ sub-queries.
         faq_sub_queries = [part for part in sub_queries if detect_intent(part) == "faq_query"]
         search_parts = faq_sub_queries if faq_sub_queries else sub_queries
+        search_parts = [part for part in search_parts if not self._is_vague_fragment(part)] or search_parts
 
         results: List[QueryResult] = []
+        normalized_faq_questions = [entry.normalized_question for entry in self.entries]
+
         for sub_query in search_parts:
+            anchor_entry = self._anchor_entry_for_query(sub_query)
+            if anchor_entry is not None:
+                top_hit = RetrievalHit(
+                    entry=anchor_entry,
+                    semantic_score=0.9,
+                    keyword_score=0.9,
+                    final_score=0.9,
+                )
+                results.append(QueryResult(sub_query=sub_query, found=True, hit=top_hit))
+                continue
+
             hits = self.retriever.retrieve(sub_query, top_k=self.config.top_k)
             top_hit = hits[0] if hits else None
             is_confident = self._is_confident_hit(sub_query, hits)
+
+            # Generic fee queries should resolve to the broad UG fee page, not specific programmes.
+            if self._is_generic_fee_query(sub_query):
+                selected_fee_hit = self._pick_general_fee_hit(hits)
+                if selected_fee_hit is not None:
+                    top_hit = selected_fee_hit
+                    is_confident = True
+                elif self.general_fee_entry is not None:
+                    top_hit = RetrievalHit(
+                        entry=self.general_fee_entry,
+                        semantic_score=0.8,
+                        keyword_score=0.8,
+                        final_score=0.8,
+                    )
+                    is_confident = True
+
+            # Only use fuzzy fallback when strict retrieval is not confident.
+            if not is_confident:
+                fuzzy_match = fuzzy_match_query_to_faq(sub_query, normalized_faq_questions, threshold=82)
+                if fuzzy_match:
+                    matched_question, match_score = fuzzy_match
+                    matched_entry = next(
+                        (entry for entry in self.entries if entry.normalized_question == matched_question),
+                        None,
+                    )
+                    if matched_entry is not None:
+                        top_hit = RetrievalHit(
+                            entry=matched_entry,
+                            semantic_score=match_score / 100.0,
+                            keyword_score=match_score / 100.0,
+                            final_score=match_score / 100.0,
+                        )
+                        is_confident = match_score >= 82
+
             results.append(QueryResult(sub_query=sub_query, found=is_confident, hit=top_hit))
 
         return build_response(results, support_contact_line=self.support_contact_line)

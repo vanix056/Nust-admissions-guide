@@ -2,3 +2,9 @@ __pycache__
 .idea
 .venv
 Phi-3-mini-4k-instruct-q4.gguf
+approach2/__pycache__
+approach2/.venv
+approach2/Phi-3-mini-4k-instruct-q4.gguf
+approach 1/FIX_SUMMARY.md
+approach 1/HOW_THE_FIX_WORKS.md
+approach 1/IMPROVEMENTS.md 
