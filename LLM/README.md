@@ -8,7 +8,10 @@ This implementation uses a local GGUF LLM as the **primary** answer engine and g
    - `LLM/data/nust_faq.json`
    - `../data/nust_faq.json`
    - `../approach2/data/nust_faq.json`
-2. Retrieves top FAQ candidates with semantic search (`sentence-transformers + FAISS`)
+2. Retrieves top FAQ candidates with semantic search (sentence-transformers + FAISS)
+   - Uses all-MiniLM-L6-v2 as primary encoder
+   - Tries all-MiniLM-L12-v2 as secondary encoder when available locally
+   - Blends semantic scores for better context relevance while keeping offline fallback safe
 3. Adds typo tolerance using query normalization and fuzzy token correction
 4. Sends retrieved FAQ context to local LLM (`llama-cpp-python`) to generate grounded answer
 5. Falls back safely if confidence is too low or LLM fails
@@ -19,6 +22,14 @@ This implementation uses a local GGUF LLM as the **primary** answer engine and g
 - Accurate (LLM, slower): uses local LLM generation for nuanced responses, but may be much slower on CPU.
 
 Choose mode from the app UI using the Response mode selector.
+
+## UI style
+
+- Messenger-style conversational layout
+- User and assistant chat bubbles with avatars
+- In-thread typing indicator during LLM mode
+- Suggestion chips that can be clicked to auto-send next query
+- Sticky composer style input area on the main page (no sidebar controls)
 
 ## Speed up LLM mode
 
@@ -64,6 +75,7 @@ export LLM_MODEL_PATH="/absolute/path/to/your-model.gguf"
 
 - This app is offline-first (`HF_HUB_OFFLINE=1`, `TRANSFORMERS_OFFLINE=1`).
 - For typo-heavy queries, retrieval uses both semantic and fuzzy evidence before LLM generation.
+- If all-MiniLM-L12-v2 is not available in local cache, retrieval automatically falls back to all-MiniLM-L6-v2 only.
 
 ## Offline answers for link-based FAQs
 
