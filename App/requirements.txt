@@ -1,6 +1,7 @@
 sentence-transformers==3.0.1
 faiss-cpu==1.8.0.post1
-llama-cpp-python==0.2.90
 rapidfuzz==3.9.6
 streamlit==1.37.1
 numpy==1.26.4
+requests==2.32.3
+beautifulsoup4==4.12.3

@@ -3,8 +3,7 @@
 > **A production-grade offline retrieval-based chatbot for NUST admissions guidance** featuring ultra-low latency (<4ms), zero hallucinations, and deterministic behavior.
 
 **Last Updated:** March 31, 2026  
-**Project Score:** 9.8/10 ✅  
-**Production Status:** ✅ **APPROVED FOR IMMEDIATE DEPLOYMENT**
+
 
 ---
 
@@ -394,38 +393,6 @@ Application source code                    ~500KB
 
 Total (fresh install)                      ~650MB
 ```
-
-### Deployment Scenarios
-
-#### Scenario A: Minimal Embedded Device (Raspberry Pi 4)
-```
-Available: 2GB RAM, Quad-core ARM CPU
-Status: ✅ WORKS but sluggish (5-10ms latency)
-Recommendation: Use only with single concurrent user
-```
-
-#### Scenario B: Standard Laptop (4GB RAM, Dual-core)
-```
-Available: 4GB RAM, 2-core CPU @ 2.5GHz
-Status: ✅ WORKS WELL (3-5ms latency)
-Recommendation: Suitable for single institution server with <50 concurrent users
-```
-
-#### Scenario C: Server (8GB RAM, 4-core)
-```
-Available: 8GB RAM, 4-core CPU @ 3GHz
-Status: ✅ EXCELLENT (1-3ms latency)
-Recommendation: Handles <200 concurrent users easily
-```
-
-#### Scenario D: Cloud Instance (16GB RAM, 8-core)
-```
-Available: 16GB+ RAM, 8-core CPU
-Status: ✅ OPTIMAL (1-2ms latency)
-Recommendation: Handles institutional deployment with 1000+ concurrent users
-```
-
----
 
 ## Dependency Overview
 
@@ -1247,12 +1214,12 @@ Examples:
 ```
 Metric               My System    LLM+Retrieval    Better By
 ────────────────────────────────────────────────────────────
-Latency (avg)        3.2ms         1500ms           470x ⚡
-Memory               1.5GB         4-5GB            3x 💾
-Hallucination Risk   0%            1-2%             ∞ 🛡️
-Accuracy (FAQ)       97.73%        92-96%           Similar
-Code Complexity      1200 lines     1600+ lines      Simpler 📖
-Reliability          100%           ~97%             Better 🎯
+Latency (avg)        3.2ms         1500ms           470x 
+Memory               1.5GB         4-5GB            3x 
+Hallucination Risk   0%            1-2%             ∞ 
+Accuracy (FAQ)       97.73%        92-96%          Similar
+Code Complexity      1200 lines    1600+ lines     Simpler 
+Reliability          100%          ~97%            Better 
 ```
 
 ---
@@ -2266,7 +2233,7 @@ streamlit run app.py
 
 ```
 Device: Raspberry Pi 4 (2GB RAM)
-├─ Runs: ✅ YES
+├─ Runs:  YES
 ├─ Performance: ~5-10ms per query (slower)
 ├─ Capacity: ~10-20 concurrent users (very limited)
 └─ Recommendation: For testing only, not production
@@ -2456,12 +2423,12 @@ The **NUST Admissions Chatbot** is a production-ready system that prioritizes **
 
 ### Key Achievements
 
-✅ **97.73% accuracy** across 7,229 test cases  
-✅ **3.2ms average latency** (60x faster than LLM-based systems)  
-✅ **1.5GB memory footprint** (70% less than LLM alternatives)  
-✅ **Zero hallucination guarantee** (FAQ-only retrieval)  
-✅ **Deterministic behavior** (same query = same answer)  
-✅ **Production-ready** (approved for deployment)
+-  **97.73% accuracy** across 7,229 test cases  
+-  **3.2ms average latency** (60x faster than LLM-based systems)  
+-  **1.5GB memory footprint** (70% less than LLM alternatives)  
+-  **Zero hallucination guarantee** (FAQ-only retrieval)  
+-  **Deterministic behavior** (same query = same answer)  
+-  **Production-ready** (approved for deployment)
 
 ### Next Steps
 
