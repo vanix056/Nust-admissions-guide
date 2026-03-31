@@ -149,9 +149,9 @@ def inject_theme(logo_path: Optional[Path]) -> None:
             border-bottom-right-radius: 5px;
         }}
         .msg-bubble.assistant {{
-            border: 1px solid #dce6f6;
-            background: #f0f3f8;
-            color: #1d3551;
+            border: 1px solid #cadeff;
+            background: #f6f9ff;
+            color: #1f4f88;
             border-bottom-left-radius: 5px;
         }}
         .runtime-panel {{
@@ -335,28 +335,13 @@ def render_chat_topbar() -> None:
     )
 
 
-def render_controls_panel(faq_path: str) -> tuple[str, str]:
+def render_controls_panel(faq_path: str) -> None:
     st.markdown('<div class="runtime-panel">', unsafe_allow_html=True)
     st.markdown("**Chat Settings**")
-    c1, c2 = st.columns(2)
-    with c1:
-        speed_mode = st.radio(
-            "Response mode",
-            options=["Fast (recommended)", "Accurate (LLM, slower)"],
-            help="Fast mode returns retrieval-grounded answers quickly. Accurate mode can use LLM synthesis.",
-            key="response_mode",
-        )
-    with c2:
-        llm_profile = st.radio(
-            "LLM Profile",
-            options=["Accuracy", "Balanced", "Speed"],
-            index=0,
-            help="Applies when Response mode is Accurate (LLM, slower).",
-            key="llm_profile",
-        )
+    st.markdown("Response mode: **Retrieval only**")
     st.caption(f"FAQ source: {faq_path}")
     st.markdown("</div>", unsafe_allow_html=True)
-    return speed_mode, llm_profile
+    return None
 
 
 def render_chat_bubble(content: str, role: str = "assistant") -> None:
@@ -413,12 +398,12 @@ def render_composer_end() -> None:
     st.markdown('</div>', unsafe_allow_html=True)
 
 
-def render_thinking_banner() -> None:
+def render_thinking_banner(message: str = "Fetching answer from official FAQ context...") -> None:
     st.markdown(
-        """
+                f"""
         <div class="thinking-wrap">
           <div class="thinking-dots"><span></span><span></span><span></span></div>
-          <div>Model is thinking through official context...</div>
+                    <div>{html.escape(message)}</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -436,17 +421,19 @@ def render_suggestions(suggestions: List[str]) -> Optional[str]:
     return None
 
 
-def render_scroll_to_latest() -> None:
+def render_scroll_to_latest(anchor_id: str = "chat-bottom-anchor") -> None:
     components.html(
-        """
+                f"""
         <script>
         const doc = window.parent.document;
-        const anchor = doc.getElementById('chat-bottom-anchor');
-        if (anchor) {
-          requestAnimationFrame(() => {
-            anchor.scrollIntoView({ behavior: 'auto', block: 'end' });
-          });
-        }
+                const anchor = doc.getElementById('{anchor_id}');
+                if (anchor) {{
+                    requestAnimationFrame(() => {{
+                        anchor.scrollIntoView({{ behavior: 'smooth', block: 'nearest' }});
+                        const input = doc.querySelector('input[aria-label="Ask your admissions question"]');
+                        if (input) {{ input.focus(); }}
+                    }});
+                }}
         </script>
         """,
         height=0,

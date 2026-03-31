@@ -1,5 +1,6 @@
 from pathlib import Path
 from datetime import datetime
+import time
 
 import streamlit as st
 
@@ -42,14 +43,6 @@ def _resolve_logo_path() -> Path | None:
     return None
 
 
-def _llm_profile_flags(profile: str) -> tuple[bool, bool, bool]:
-    if profile == "Accuracy":
-        return False, False, False
-    if profile == "Balanced":
-        return False, True, False
-    return True, True, True
-
-
 def main() -> None:
     st.set_page_config(page_title="NUST Admissions Assistant", page_icon="🎓", layout="centered")
 
@@ -69,17 +62,10 @@ def main() -> None:
         st.session_state.history = []
     if "queued_query" not in st.session_state:
         st.session_state.queued_query = ""
-    if "response_mode" not in st.session_state:
-        st.session_state.response_mode = "Fast (recommended)"
-    if "llm_profile" not in st.session_state:
-        st.session_state.llm_profile = "Accuracy"
     if "composer_query" not in st.session_state:
         st.session_state.composer_query = ""
 
-    speed_mode = st.session_state.response_mode
-    llm_profile = st.session_state.llm_profile
-    use_llm_generation = speed_mode == "Accurate (LLM, slower)"
-    llm_cpu_fast_mode, llm_bypass_in_llm_mode, llm_enforce_latency_budget = _llm_profile_flags(llm_profile)
+    use_llm_generation = False
 
     request_query = st.session_state.queued_query.strip()
     if request_query:
@@ -89,9 +75,9 @@ def main() -> None:
     query = ""
 
     if request_query:
-        if use_llm_generation:
-            render_inline_typing(role="assistant")
-            render_thinking_banner()
+        render_inline_typing(role="assistant")
+        render_thinking_banner("Fetching the best answer from official FAQs...")
+        time.sleep(0.12)
 
         answer, meta = get_answer(
             request_query,
@@ -99,9 +85,6 @@ def main() -> None:
             entries,
             questions,
             use_llm_generation=use_llm_generation,
-            llm_cpu_fast_mode=llm_cpu_fast_mode,
-            llm_bypass_in_llm_mode=llm_bypass_in_llm_mode,
-            llm_enforce_latency_budget=llm_enforce_latency_budget,
         )
 
         suggestions = suggest_followup_queries(
@@ -147,10 +130,11 @@ def main() -> None:
         st.markdown('</div>', unsafe_allow_html=True)
         render_scroll_to_latest()
 
-    speed_mode, llm_profile = render_controls_panel(str(faq_path))
+    render_controls_panel(str(faq_path))
 
     render_composer_start()
     with st.form("ask_form", clear_on_submit=True):
+        st.markdown('<div id="composer-anchor"></div>', unsafe_allow_html=True)
         query = st.text_input(
             "Ask your admissions question",
             key="composer_query",
@@ -163,6 +147,8 @@ def main() -> None:
     if submitted and query.strip():
         st.session_state.queued_query = query.strip()
         st.rerun()
+
+    render_scroll_to_latest(anchor_id="composer-anchor")
 
 
 if __name__ == "__main__":

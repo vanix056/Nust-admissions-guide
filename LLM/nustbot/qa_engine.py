@@ -268,7 +268,7 @@ def conversationalize_answer(query: str, answer: str) -> str:
 
     if re.match(r"^(yes|no|you can|there is|result|admissions|for)\b", text, re.IGNORECASE):
         return text
-    return f"Based on the official FAQ, {text}"
+    return text
 
 
 def append_links(answer: str, links: List[str]) -> str:
@@ -1174,7 +1174,7 @@ def _get_single_answer(
     q_norm_for_scope = normalize_text(query)
     if any(p in q_norm_for_scope for p in ["tell me everything", "everything about", "all about admissions", "complete admissions info"]):
         return (
-            "Based on the official FAQ, admissions can be pursued through NET and/or ACT/SAT routes depending on category and programme. "
+            "Admissions can be pursued through NET and/or ACT/SAT routes depending on category and programme. "
             "Key checks include eligibility criteria, accepted test category, fee structure, and schedule deadlines. "
             "Please ask a specific sub-question (for example: eligibility, tests, fee, merit, hostel, or documents) so I can provide the exact official policy answer.",
             {
@@ -1438,7 +1438,7 @@ def get_answer(
         )
 
     # Compound path: answer each part independently, then compose.
-    combined_blocks = []
+    combined_blocks: List[str] = []
     matched = []
     confidence_items = []
     llm_used = False
@@ -1458,7 +1458,8 @@ def get_answer(
         if ans_key in seen_answer_blocks:
             continue
         seen_answer_blocks.add(ans_key)
-        combined_blocks.append(f"{len(combined_blocks) + 1}. {ans}")
+        cleaned_ans = re.sub(r"\n{3,}", "\n\n", ans).strip()
+        combined_blocks.append(cleaned_ans)
         m = meta.get("matched_question", "")
         if m:
             matched.append(m)
