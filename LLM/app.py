@@ -16,6 +16,7 @@ from nustbot.ui import (
     render_header,
     render_suggestions,
     render_thinking_banner,
+    render_scroll_to_latest,
 )
 
 # Re-export key engine functions for script compatibility (e.g., import app; app.get_answer(...)).
@@ -66,33 +67,26 @@ def main() -> None:
 
     if "history" not in st.session_state:
         st.session_state.history = []
-    if "pending_query" not in st.session_state:
-        st.session_state.pending_query = ""
-    if "pending_autosend" not in st.session_state:
-        st.session_state.pending_autosend = False
+    if "queued_query" not in st.session_state:
+        st.session_state.queued_query = ""
     if "response_mode" not in st.session_state:
         st.session_state.response_mode = "Fast (recommended)"
     if "llm_profile" not in st.session_state:
         st.session_state.llm_profile = "Accuracy"
-
-    default_query = st.session_state.pending_query
-    st.session_state.pending_query = ""
+    if "composer_query" not in st.session_state:
+        st.session_state.composer_query = ""
 
     speed_mode = st.session_state.response_mode
     llm_profile = st.session_state.llm_profile
     use_llm_generation = speed_mode == "Accurate (LLM, slower)"
     llm_cpu_fast_mode, llm_bypass_in_llm_mode, llm_enforce_latency_budget = _llm_profile_flags(llm_profile)
 
-    autosend_query = ""
-    if st.session_state.pending_autosend and default_query.strip():
-        autosend_query = default_query.strip()
-        st.session_state.pending_autosend = False
+    request_query = st.session_state.queued_query.strip()
+    if request_query:
+        st.session_state.queued_query = ""
 
-    request_query = ""
     submitted = False
     query = ""
-    if autosend_query:
-        request_query = autosend_query
 
     if request_query:
         if use_llm_generation:
@@ -147,10 +141,11 @@ def main() -> None:
             if i == history_len - 1:
                 next_query = render_suggestions(item.get("suggestions", []))
                 if next_query:
-                    st.session_state.pending_query = next_query
-                    st.session_state.pending_autosend = True
+                    st.session_state.queued_query = next_query
                     st.rerun()
+        st.markdown('<div id="chat-bottom-anchor"></div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
+        render_scroll_to_latest()
 
     speed_mode, llm_profile = render_controls_panel(str(faq_path))
 
@@ -158,7 +153,7 @@ def main() -> None:
     with st.form("ask_form", clear_on_submit=True):
         query = st.text_input(
             "Ask your admissions question",
-            value=default_query,
+            key="composer_query",
             placeholder="Example: What is NET fee for Pakistani students?",
             label_visibility="collapsed",
         )
@@ -166,8 +161,7 @@ def main() -> None:
     render_composer_end()
 
     if submitted and query.strip():
-        st.session_state.pending_query = query.strip()
-        st.session_state.pending_autosend = True
+        st.session_state.queued_query = query.strip()
         st.rerun()
 
 

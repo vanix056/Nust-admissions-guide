@@ -73,6 +73,9 @@ def inject_theme(logo_path: Optional[Path]) -> None:
             font-size: 0.9rem;
             color: #557799;
         }}
+        h3 {{
+            color: #000000 !important;
+        }}
         .chat-wrap {{
             border: 1px solid rgba(10, 63, 109, 0.12);
             border-radius: 18px;
@@ -158,6 +161,13 @@ def inject_theme(logo_path: Optional[Path]) -> None:
             padding: 10px 12px;
             margin: 8px 0 12px;
         }}
+        .runtime-panel p,
+        .runtime-panel label,
+        .runtime-panel [data-testid="stMarkdownContainer"],
+        .runtime-panel [data-testid="stWidgetLabel"],
+        .runtime-panel div {{
+            color: #000000 !important;
+        }}
         .composer-shell {{
             border: 1px solid rgba(12, 69, 120, 0.12);
             border-radius: 16px;
@@ -173,13 +183,24 @@ def inject_theme(logo_path: Optional[Path]) -> None:
             border-radius: 999px;
             border: 1px solid #c7d9f5;
             padding-left: 14px;
+            background: #ffffff !important;
+            color: #000000 !important;
+            caret-color: #000000 !important;
+        }}
+        .composer-shell [data-testid="stTextInput"] input::placeholder {{
+            color: #000000 !important;
+            opacity: 0.9;
         }}
         .composer-shell [data-testid="stFormSubmitButton"] button {{
             border-radius: 999px;
-            background: linear-gradient(130deg, #0a67ff 0%, #2f83ff 100%);
-            color: white;
-            border: none;
+            background: #ffffff !important;
+            color: #000000 !important;
+            border: 1px solid #9bb7df !important;
             font-weight: 700;
+        }}
+        .composer-shell [data-testid="stFormSubmitButton"] button:hover {{
+            background: #f4f8ff !important;
+            color: #000000 !important;
         }}
         @keyframes riseIn {{
             from {{ opacity: 0; transform: translateY(8px); }}
@@ -229,6 +250,10 @@ def inject_theme(logo_path: Optional[Path]) -> None:
         .msg-time.assistant {{
             text-align: left;
             margin-left: 40px;
+        }}
+        [data-testid="stCaptionContainer"] p {{
+            color: #000000 !important;
+            font-weight: 600;
         }}
         .typing-inline {{
             display: inline-flex;
@@ -409,3 +434,20 @@ def render_suggestions(suggestions: List[str]) -> Optional[str]:
         if st.button(suggestion, key=f"suggest_btn_{i}_{hash(suggestion)}", use_container_width=True):
             return suggestion
     return None
+
+
+def render_scroll_to_latest() -> None:
+    components.html(
+        """
+        <script>
+        const doc = window.parent.document;
+        const anchor = doc.getElementById('chat-bottom-anchor');
+        if (anchor) {
+          requestAnimationFrame(() => {
+            anchor.scrollIntoView({ behavior: 'auto', block: 'end' });
+          });
+        }
+        </script>
+        """,
+        height=0,
+    )
