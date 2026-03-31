@@ -1,0 +1,87 @@
+================================================================================
+NUST ADMISSIONS CHATBOT - COMPREHENSIVE TEST REPORT
+================================================================================
+
+Total Test Cases: 7,229
+Overall Accuracy: 97.73%
+FAQs Tested: 74
+Variations per FAQ: ~100
+
+PERFORMANCE METRICS
+--------------------------------------------------------------------------------
+Average Latency: 3.20ms
+Median (P50): 1.79ms
+P95: 6.51ms
+P99: 27.80ms
+
+TOP 20 MOST ACCURATE FAQs
+--------------------------------------------------------------------------------
+100.0% - Are there any quota / reserved seats?
+100.0% - Can a candidate apply both for open merit and ACT based seats?
+100.0% - Can a candidate of ICS / equivalent qualification eligible to apply fo
+100.0% - Can a candidate with FSc Pre-Medical / equivalent qualification, appea
+100.0% - Can candidates of FSc Pre-Medical / equivalent qualification apply for
+100.0% - Can foreign / international students apply for admission in BSHND prog
+100.0% - Can I apply for computing programmes with HSSC / A level background in
+100.0% - Can I apply for more than one programme?
+100.0% - Can I apply for rechecking of Entry Test Result?
+100.0% - Can I get some sample Test papers of NUST Entry Test?
+100.0% - Do I fall under the Expatriate Students category?
+100.0% - Does NUST cater for the pick and drop facility?
+100.0% - Does NUST offer scholarship / financial assistance?
+100.0% - How can I apply for admission in BS Human Nutrition and Dietetics (BSH
+100.0% - How can I submit the application processing fee?
+100.0% - How many allied programmes does NSHS offer?
+100.0% - I am a foreigner and want to get admission at NUST?
+100.0% - I am in my final year of A Level and my result will be announced in Au
+100.0% - I could not appear in NUST Entry Test, Can I take the Test on some oth
+100.0% - If I am selected on all 3 merits, what should I do?
+
+
+LOWEST ACCURACY FAQs (Need Improvement)
+--------------------------------------------------------------------------------
+81.4% - I am a born Pakistani with a foreign passport; can I apply as an expat
+    Failed: I would like to know i am a born pakistani with a foreign pa...
+    Failed: Please explain i am a born pakistani with a foreign passport...
+84.1% - What is the deadline for submission of ACT / SAT score?
+    Failed: What is the deadline for submission of ACT / uSAT score?
+    Failed: What is the deadline for submission of ACT / SATs core?
+84.2% - For various academics backgrounds, which options for various UG discip
+    Failed: What can you tell me about for various academics backgrounds...
+    Failed: I would like to know for various academics backgrounds, whic...
+84.8% - When will the classes for MBBS programme start?
+    Failed: When will theclasses for MBBS programme start?
+    Failed: hWen will the classes for MBBS programme start?
+85.2% - How can I submit the application processing fee (online) using 1Link o
+    Failed: How can I submit the application processing efe (online) usi...
+    Failed: How can I submit the application processing amount (online) ...
+85.4% - How can I apply for admission in MBBS Programme?
+    Failed: How can I apply for registration in MBBS Programme?
+    Failed: How qcan I apply for admission in MBBS Programme?
+89.8% - Can foreign students apply for admission at NSHS?
+    Failed: can foreign students register for for admission at nshs?
+    Failed: Can foreign students appl yfor admission at NSHS?
+90.3% - Name on my CNIC and Passport is different from that on my academic doc
+    Failed: Name on my CNIC and Passport is different from that on my ac...
+    Failed: I need information on name on my cnic and passport is differ...
+90.4% - What category of candidates can apply for admission on the basis of AC
+    Failed: What category of persons can apply for admission on the basi...
+    Failed: what category of candidates can register for for admission o...
+91.7% - What is the fee structure for MBBS progamme in NSHS?
+    Failed: What is the amount structure for MBBS progamme in NSHS?
+    Failed: What is the yfee structure for MBBS progamme in NSHS?
+93.6% - Are there any reserved / quota seats for admission in MBBS Programme?
+    Failed: Are there any reserved / quota seats for admission inM BBS P...
+    Failed: Are there any reserved / quota seats for admission in BBS Pr...
+95.6% - What is the fee structure for the progamme?
+    Failed: What is the cost structure for the progamme?
+    Failed: What is the amount structure for the progamme?
+95.7% - How can I apply at NUST if I am an expatriate student?
+    Failed: how can i submit application for at nust if i am an expatria...
+    Failed: how can i register for at nust if i am an expatriate student...
+95.9% - What is the Merit Generation Criteria for admission in MBBS Programme?
+    Failed: What is the Merit Generation Criteria for enrollment in MBBS...
+    Failed: What is the Merit Generation Criteria for registration in MB...
+96.1% - What is the admission criteria for BSHND programme?
+    Failed: What is the registration criteria for BSHND programme?
+    Failed: What is the enrollment criteria for BSHND programme?
