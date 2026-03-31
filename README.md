@@ -2428,7 +2428,7 @@ The **NUST Admissions Chatbot** is a production-ready system that prioritizes **
 -  **1.5GB memory footprint** (70% less than LLM alternatives)  
 -  **Zero hallucination guarantee** (FAQ-only retrieval)  
 -  **Deterministic behavior** (same query = same answer)  
--  **Production-ready** (approved for deployment)
+
 
 ### Next Steps
 
