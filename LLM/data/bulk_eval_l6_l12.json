@@ -1,0 +1,15 @@
+{
+  "models_requested": [
+    "all-MiniLM-L6-v2",
+    "all-MiniLM-L12-v2"
+  ],
+  "models_active": [
+    "all-MiniLM-L6-v2",
+    "all-MiniLM-L12-v2"
+  ],
+  "total": 1440,
+  "correct": 1440,
+  "wrong": 0,
+  "accuracy_percent": 100.0,
+  "failures": []
+}

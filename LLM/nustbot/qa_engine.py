@@ -443,15 +443,13 @@ def _intent_override_index(query_norm: str, questions: List[str], answers: List[
             return idx
 
     # Refundability of admission/application processing fee.
-    if "fee" in tokens and tokens.intersection({"refund", "refundable", "selected", "join"}):
+    if "fee" in tokens and tokens.intersection({"refund", "refundable"}) and tokens.intersection({"selected", "join", "not", "case"}):
         idx = find_best(lambda q, a: "refundable" in q and "admission processing fee" in q)
         if idx >= 0:
             return idx
 
     # Security deposit / processing fee refund on not joining.
-    if tokens.intersection({"admission", "join", "money", "refund", "refundable", "back"}) and (
-        ("fee" in tokens) or ("deposit" in tokens) or ("security" in tokens)
-    ):
+    if tokens.intersection({"refund", "refundable", "money", "back"}) and tokens.intersection({"admission", "join", "fee", "deposit", "security"}):
         idx = find_best(
             lambda q, a: "security deposit" in q and "does not join the university" in q
         )
@@ -478,9 +476,53 @@ def _intent_override_index(query_norm: str, questions: List[str], answers: List[
         if idx >= 0:
             return idx
 
+    # MBBS specific quota/reserved-seat intent.
+    if tokens.intersection({"quota", "reserved"}) and "mbbs" in tokens:
+        idx = find_best(lambda q, a: "reserved / quota seats" in q and "mbbs" in q)
+        if idx >= 0:
+            return idx
+
     # General quota / reserved seats (non-MBBS specific).
     if tokens.intersection({"quota", "reserved"}) and not tokens.intersection({"mbbs", "nshs"}):
         idx = find_best(lambda q, a: "are there any quota / reserved seats?" in q)
+        if idx >= 0:
+            return idx
+
+    # NET result copy intent.
+    if tokens.intersection({"entry", "net", "test"}) and "result" in tokens and "copy" in tokens:
+        idx = find_best(lambda q, a: "copy of nust entry test result" in q)
+        if idx >= 0:
+            return idx
+
+    # NET result rechecking intent.
+    if tokens.intersection({"entry", "net", "test"}) and tokens.intersection({"result", "rechecking", "recheck", "re-check"}):
+        idx = find_best(
+            lambda q, a: (
+                "rechecking" in q and "entry test result" in q
+            )
+        )
+        if idx >= 0:
+            return idx
+
+    # Pick and drop transport facility.
+    if tokens.intersection({"pick", "drop", "transport"}) and "facility" in tokens:
+        if "students" not in tokens:
+            idx = find_best(lambda q, a: "pick and drop facility?" in q and "for the students" not in q)
+            if idx >= 0:
+                return idx
+        idx = find_best(lambda q, a: "pick and drop facility" in q)
+        if idx >= 0:
+            return idx
+
+    # Quarterly/six-monthly tuition payment confirmation policy.
+    if tokens.intersection({"admission", "confirmed", "confirmation"}) and tokens.intersection({"quarterly", "six", "sixmonthly", "tuition", "payment"}):
+        idx = find_best(lambda q, a: "quarterly or six-monthly payment of tuition fee" in q)
+        if idx >= 0:
+            return idx
+
+    # Specific typoed FAQ wording preserved in source data.
+    if "fee" in tokens and "structure" in tokens and "progamme" in tokens:
+        idx = find_best(lambda q, a: "fee structure for the progamme" in q and "mbbs" not in q)
         if idx >= 0:
             return idx
 
@@ -512,7 +554,7 @@ def _intent_override_index(query_norm: str, questions: List[str], answers: List[
         if idx >= 0:
             return idx
 
-    # Online fee payment methods (1Link/card/banking) should not route to fee amount.
+    # Online fee payment methods (1Link/card/banking) should not route to generic fee submission.
     if "fee" in tokens and (
         "online" in tokens
         or bool(tokens.intersection({"1link", "bill", "invoice", "card", "banking", "easypaisa", "jazzcash"}))
@@ -530,9 +572,36 @@ def _intent_override_index(query_norm: str, questions: List[str], answers: List[
         if idx >= 0:
             return idx
 
+    # Generic fee submission intent (non-online details).
+    if tokens.intersection({"submit", "submission"}) and "fee" in tokens and not tokens.intersection({"online", "1link", "bill", "invoice", "card", "banking", "easypaisa", "jazzcash"}):
+        idx = find_best(
+            lambda q, a: (
+                "how can i submit the application processing fee?" in q
+                and "online" not in q
+            )
+        )
+        if idx >= 0:
+            return idx
+
     # ICS background applying for engineering.
     if "ics" in tokens and "engineering" in tokens:
         idx = find_best(lambda q, a: "ics" in q and "engineering" in q)
+        if idx >= 0:
+            return idx
+
+    # Pre-medical with additional mathematics awaiting result (engineering eligibility).
+    has_pre_med = bool(tokens.intersection({"pre", "medical", "premedical"}))
+    has_add_math = bool(tokens.intersection({"additional", "mathematics", "maths", "math"}))
+    has_eng = "engineering" in tokens
+    has_waiting_result = ("waiting" in tokens and "result" in tokens)
+    if has_pre_med and has_add_math and (has_eng or has_waiting_result):
+        idx = find_best(lambda q, a: "pre-medical" in q and "additional mathematics" in q and "engineering" in q)
+        if idx >= 0:
+            return idx
+
+    # Foreign/international students for BSHND/NSHS specific intents.
+    if tokens.intersection({"foreign", "foreigner", "international"}) and tokens.intersection({"bshnd", "nshs"}):
+        idx = find_best(lambda q, a: ("foreign" in q or "international" in q) and ("bshnd" in q or "nshs" in q))
         if idx >= 0:
             return idx
 
@@ -547,6 +616,12 @@ def _intent_override_index(query_norm: str, questions: List[str], answers: List[
     # Missed NET session / reschedule intent.
     if "net" in tokens and tokens.intersection({"miss", "missed", "reschedule", "session", "other", "day"}):
         idx = find_best(lambda q, a: "could not appear" in q and "entry test" in q)
+        if idx >= 0:
+            return idx
+
+    # NET duration-only intent.
+    if "net" in tokens and tokens.intersection({"duration", "long", "time"}) and not tokens.intersection({"mcq", "mcqs", "number"}):
+        idx = find_best(lambda q, a: "how long is nust entry test" in q)
         if idx >= 0:
             return idx
 
@@ -611,6 +686,19 @@ def _intent_override_index(query_norm: str, questions: List[str], answers: List[
     # NSHS programme count besides MBBS.
     if tokens.intersection({"nshs", "programme", "programmes", "program", "offer", "offerings"}) and tokens.intersection({"how", "many", "besides", "mbbs"}):
         idx = find_best(lambda q, a: "how many allied programmes does nshs offer" in q)
+        if idx >= 0:
+            return idx
+
+
+    # Explicit compare/advice wording for test-route selection.
+    if tokens.intersection({"net", "sat", "act"}) and tokens.intersection({"better", "best", "choose", "comparison", "compare", "difference", "route"}):
+        idx = find_best(lambda q, a: "taken act / sat tests" in q and "entry test" in q)
+        if idx >= 0:
+            return idx
+
+    # Generic fee + structure/charges wording should prefer fee-structure FAQ.
+    if tokens.intersection({"fee", "charges", "cost", "tuition"}) and tokens.intersection({"structure", "details", "breakdown", "overview"}):
+        idx = find_best(lambda q, a: "fee structure of different ug programmes" in q)
         if idx >= 0:
             return idx
 
@@ -705,6 +793,14 @@ def build_question_vocab(questions: List[str]) -> List[str]:
 
 
 def normalize_query_for_matching(query: str, vocab: List[str]) -> str:
+    # Remove common courtesy prefixes so retrieval/routing keys on actual intent.
+    query = re.sub(
+        r"^\s*(please\s+tell\s+me\s*,?|kindly\s+guide\s*:?|i\s+need\s+help\s+about\s+this\s*:?|can\s+you\s+clarify\s*,?|could\s+you\s+explain\s*:?)+\s*",
+        "",
+        query,
+        flags=re.IGNORECASE,
+    )
+
     alias_map = {
         "nsut": "nust",
         "nuust": "nust",
@@ -1090,6 +1186,57 @@ def _get_single_answer(
 
     vocab = build_question_vocab(questions)
     query_for_match = normalize_query_for_matching(query, vocab)
+
+    # High-confidence direct FAQ lock to protect exact/near-exact wording from broad intent overrides.
+    query_norm = normalize_text(query_for_match)
+    normalized_questions = [normalize_text(q) for q in questions]
+    best_direct = process.extractOne(query_norm, normalized_questions, scorer=fuzz.token_set_ratio)
+    if best_direct:
+        direct_text, direct_score, direct_idx = best_direct
+        matched_q_norm = normalized_questions[direct_idx]
+        query_tokens = set(re.findall(r"[a-z0-9]+", query_norm))
+        skip_direct_lock = (
+            query_tokens.intersection({"quota", "reserved"})
+            and not query_tokens.intersection({"mbbs", "nshs"})
+            and "mbbs" in matched_q_norm
+        )
+        # Prefer generic fee-structure FAQ unless user explicitly asks MBBS/NSHS.
+        if (
+            query_tokens.intersection({"fee", "structure", "programme", "program"})
+            and not query_tokens.intersection({"mbbs", "nshs", "bshnd"})
+            and ("mbbs" in matched_q_norm or "nshs" in matched_q_norm)
+        ):
+            skip_direct_lock = True
+        # Prefer exact pick/drop variant when query does not mention students.
+        if (
+            query_tokens.intersection({"pick", "drop", "facility"})
+            and "students" not in query_tokens
+            and "for the students" in matched_q_norm
+        ):
+            skip_direct_lock = True
+        # Prefer generic fee submission FAQ for non-online phrasing.
+        if (
+            query_tokens.intersection({"submit", "submission", "pay", "payment", "fee"})
+            and not query_tokens.intersection({"online", "1link", "bill", "invoice", "card", "banking", "easypaisa", "jazzcash"})
+            and ("online" in matched_q_norm or "1link" in matched_q_norm)
+        ):
+            skip_direct_lock = True
+        # Prefer online/1Link variant if query explicitly asks for it.
+        if (
+            query_tokens.intersection({"online", "1link", "bill", "invoice", "card", "banking", "easypaisa", "jazzcash"})
+            and "submit" in query_tokens
+            and "fee" in query_tokens
+            and ("online" not in matched_q_norm and "1link" not in matched_q_norm)
+        ):
+            skip_direct_lock = True
+        if (not skip_direct_lock) and int(direct_score) >= 92:
+            final = conversationalize_answer(query, entries[direct_idx]["answer"])
+            final = embed_links_inline(final, entries[direct_idx].get("links", []))
+            return final, {
+                "source": "direct_faq_lock",
+                "confidence": f"direct_fuzzy={float(direct_score):.1f}",
+                "matched_question": entries[direct_idx]["question"],
+            }
 
     override_idx = _intent_override_index(query_for_match, questions, [e["answer"] for e in entries])
     if override_idx >= 0:

@@ -1,0 +1,427 @@
+{
+  "models_requested": [
+    "all-MiniLM-L6-v2"
+  ],
+  "models_active": [
+    "all-MiniLM-L6-v2"
+  ],
+  "total": 1440,
+  "correct": 1381,
+  "wrong": 59,
+  "accuracy_percent": 95.9,
+  "failures": [
+    {
+      "expected": "Can I get a copy of NUST Entry Test result?",
+      "query": "Can I get a copy of NUST Entry Test result please",
+      "matched": "Can I apply for rechecking of Entry Test Result?",
+      "source": "intent_override",
+      "answer_preview": "Based on the official FAQ, Re-checking of Paper Based Entry Test may be requested within 5 days of the declaration of result along with a fee of Rs. 500/- in the form of a bank draft / pay order in favour of NUST. The or"
+    },
+    {
+      "expected": "Does NUST cater for the pick and drop facility?",
+      "query": "Does NUST cater for the pick and drop facility?",
+      "matched": "Does NUST cater for the pick and drop facility for the students?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Pick and drop service is provided to students of Rawalpindi and Islamabad only with specified routes, for which the student has to pay separate charges. You will be guided to avail the facility"
+    },
+    {
+      "expected": "Does NUST cater for the pick and drop facility?",
+      "query": "does nust cater for the pick and drop facility?",
+      "matched": "Does NUST cater for the pick and drop facility for the students?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Pick and drop service is provided to students of Rawalpindi and Islamabad only with specified routes, for which the student has to pay separate charges. You will be guided to avail the facility"
+    },
+    {
+      "expected": "Does NUST cater for the pick and drop facility?",
+      "query": "Does NUST cater for the pick and drop facility",
+      "matched": "Does NUST cater for the pick and drop facility for the students?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Pick and drop service is provided to students of Rawalpindi and Islamabad only with specified routes, for which the student has to pay separate charges. You will be guided to avail the facility"
+    },
+    {
+      "expected": "Does NUST cater for the pick and drop facility?",
+      "query": "Please tell me, Does NUST cater for the pick and drop facility?",
+      "matched": "Does NUST cater for the pick and drop facility for the students?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Pick and drop service is provided to students of Rawalpindi and Islamabad only with specified routes, for which the student has to pay separate charges. You will be guided to avail the facility"
+    },
+    {
+      "expected": "Does NUST cater for the pick and drop facility?",
+      "query": "Kindly guide: Does NUST cater for the pick and drop facility?",
+      "matched": "Does NUST cater for the pick and drop facility for the students?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Pick and drop service is provided to students of Rawalpindi and Islamabad only with specified routes, for which the student has to pay separate charges. You will be guided to avail the facility"
+    },
+    {
+      "expected": "Does NUST cater for the pick and drop facility?",
+      "query": "I need help about this: Does NUST cater for the pick and drop facility?",
+      "matched": "Does NUST cater for the pick and drop facility for the students?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Pick and drop service is provided to students of Rawalpindi and Islamabad only with specified routes, for which the student has to pay separate charges. You will be guided to avail the facility"
+    },
+    {
+      "expected": "Does NUST cater for the pick and drop facility?",
+      "query": "Can you clarify Does NUST cater for the pick and drop facility?",
+      "matched": "Does NUST cater for the pick and drop facility for the students?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Pick and drop service is provided to students of Rawalpindi and Islamabad only with specified routes, for which the student has to pay separate charges. You will be guided to avail the facility"
+    },
+    {
+      "expected": "Does NUST cater for the pick and drop facility?",
+      "query": "Does NUST cater for the pick and drop facility please",
+      "matched": "Does NUST cater for the pick and drop facility for the students?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Pick and drop service is provided to students of Rawalpindi and Islamabad only with specified routes, for which the student has to pay separate charges. You will be guided to avail the facility"
+    },
+    {
+      "expected": "Does NUST cater for the pick and drop facility?",
+      "query": "Could you explain: Does NUST cater for the pick and drop facility?",
+      "matched": "Does NUST cater for the pick and drop facility for the students?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Pick and drop service is provided to students of Rawalpindi and Islamabad only with specified routes, for which the student has to pay separate charges. You will be guided to avail the facility"
+    },
+    {
+      "expected": "How can I submit the application processing fee (online) using 1Link option?",
+      "query": "How can I submit the application processing fee (online) using 1Link option please",
+      "matched": "How can I submit the application processing fee?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Candidates can submit the fee through any of the following options: 1 Link(1 Bill Invoice Number) Credit Card"
+    },
+    {
+      "expected": "How can I submit the application processing fee?",
+      "query": "How can I submit the application processing fee?",
+      "matched": "How can I submit the application processing fee (online) using 1Link option?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Candidates can use the unique 17-digit 1 Bill Invoice / Consumer No. mentioned under the Fee Invoice section, to pay their fee via 1 Link service through any of the following payment modes: Mob"
+    },
+    {
+      "expected": "How can I submit the application processing fee?",
+      "query": "how can i submit the application processing fee?",
+      "matched": "How can I submit the application processing fee (online) using 1Link option?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Candidates can use the unique 17-digit 1 Bill Invoice / Consumer No. mentioned under the Fee Invoice section, to pay their fee via 1 Link service through any of the following payment modes: Mob"
+    },
+    {
+      "expected": "How can I submit the application processing fee?",
+      "query": "How can I submit the application processing fee",
+      "matched": "How can I submit the application processing fee (online) using 1Link option?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Candidates can use the unique 17-digit 1 Bill Invoice / Consumer No. mentioned under the Fee Invoice section, to pay their fee via 1 Link service through any of the following payment modes: Mob"
+    },
+    {
+      "expected": "How can I submit the application processing fee?",
+      "query": "Please tell me, How can I submit the application processing fee?",
+      "matched": "How can I submit the application processing fee (online) using 1Link option?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Candidates can use the unique 17-digit 1 Bill Invoice / Consumer No. mentioned under the Fee Invoice section, to pay their fee via 1 Link service through any of the following payment modes: Mob"
+    },
+    {
+      "expected": "How can I submit the application processing fee?",
+      "query": "Kindly guide: How can I submit the application processing fee?",
+      "matched": "How can I submit the application processing fee (online) using 1Link option?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Candidates can use the unique 17-digit 1 Bill Invoice / Consumer No. mentioned under the Fee Invoice section, to pay their fee via 1 Link service through any of the following payment modes: Mob"
+    },
+    {
+      "expected": "How can I submit the application processing fee?",
+      "query": "I need help about this: How can I submit the application processing fee?",
+      "matched": "How can I submit the application processing fee (online) using 1Link option?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Candidates can use the unique 17-digit 1 Bill Invoice / Consumer No. mentioned under the Fee Invoice section, to pay their fee via 1 Link service through any of the following payment modes: Mob"
+    },
+    {
+      "expected": "How can I submit the application processing fee?",
+      "query": "Can you clarify How can I submit the application processing fee?",
+      "matched": "How can I submit the application processing fee (online) using 1Link option?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Candidates can use the unique 17-digit 1 Bill Invoice / Consumer No. mentioned under the Fee Invoice section, to pay their fee via 1 Link service through any of the following payment modes: Mob"
+    },
+    {
+      "expected": "How can I submit the application processing fee?",
+      "query": "Could you explain: How can I submit the application processing fee?",
+      "matched": "How can I submit the application processing fee (online) using 1Link option?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Candidates can use the unique 17-digit 1 Bill Invoice / Consumer No. mentioned under the Fee Invoice section, to pay their fee via 1 Link service through any of the following payment modes: Mob"
+    },
+    {
+      "expected": "What is the fee structure for the progamme?",
+      "query": "What is the fee structure for the progamme?",
+      "matched": "What is the fee structure for MBBS progamme in NSHS?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Detailed fee structure for MBBS programme can be viewed by visiting"
+    },
+    {
+      "expected": "What is the fee structure for the progamme?",
+      "query": "what is the fee structure for the progamme?",
+      "matched": "What is the fee structure for MBBS progamme in NSHS?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Detailed fee structure for MBBS programme can be viewed by visiting"
+    },
+    {
+      "expected": "What is the fee structure for the progamme?",
+      "query": "What is the fee structure for the progamme",
+      "matched": "What is the fee structure for MBBS progamme in NSHS?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Detailed fee structure for MBBS programme can be viewed by visiting"
+    },
+    {
+      "expected": "What is the fee structure for the progamme?",
+      "query": "Please tell me, What is the fee structure for the progamme?",
+      "matched": "What is the fee structure for MBBS progamme in NSHS?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Detailed fee structure for MBBS programme can be viewed by visiting"
+    },
+    {
+      "expected": "What is the fee structure for the progamme?",
+      "query": "Kindly guide: What is the fee structure for the progamme?",
+      "matched": "What is the fee structure for MBBS progamme in NSHS?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Detailed fee structure for MBBS programme can be viewed by visiting"
+    },
+    {
+      "expected": "What is the fee structure for the progamme?",
+      "query": "I need help about this: What is the fee structure for the progamme?",
+      "matched": "What is the fee structure for MBBS progamme in NSHS?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Detailed fee structure for MBBS programme can be viewed by visiting"
+    },
+    {
+      "expected": "What is the fee structure for the progamme?",
+      "query": "Can you clarify What is the fee structure for the progamme?",
+      "matched": "What is the fee structure for MBBS progamme in NSHS?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Detailed fee structure for MBBS programme can be viewed by visiting"
+    },
+    {
+      "expected": "What is the fee structure for the progamme?",
+      "query": "What is the fee structure for the progamme please",
+      "matched": "What is the fee structure of different UG programmes?",
+      "source": "intent_override",
+      "answer_preview": "Based on the official FAQ, Please visit:"
+    },
+    {
+      "expected": "What is the fee structure for the progamme?",
+      "query": "Could you explain: What is the fee structure for the progamme?",
+      "matched": "What is the fee structure for MBBS progamme in NSHS?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Detailed fee structure for MBBS programme can be viewed by visiting"
+    },
+    {
+      "expected": "Will the admission be confirmed in case of quarterly or six-monthly payment of tuition fee?",
+      "query": "Will the admission be confirmed in case of quarterly or six-monthly payment of tuition fee please",
+      "matched": "Would the admission processing fee / security deposit be refundable in case a student does not join the University?",
+      "source": "intent_override",
+      "answer_preview": "Based on the official FAQ, The university will refund only the security deposit to the candidates who do not join the university. Admission Processing Fee is non-refundable."
+    },
+    {
+      "expected": "Can I get a copy of NUST Entry Test result?",
+      "query": "Can I get a copy of NUST Entry Test result please",
+      "matched": "Can I apply for rechecking of Entry Test Result?",
+      "source": "intent_override",
+      "answer_preview": "Based on the official FAQ, Re-checking of Paper Based Entry Test may be requested within 5 days of the declaration of result along with a fee of Rs. 500/- in the form of a bank draft / pay order in favour of NUST. The or"
+    },
+    {
+      "expected": "How can I submit the application processing fee (online) using 1Link option?",
+      "query": "How can I submit the application processing fee (online) using 1Link option please",
+      "matched": "How can I submit the application processing fee?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Candidates can submit the fee through any of the following options: 1 Link(1 Bill Invoice Number) Credit Card"
+    },
+    {
+      "expected": "How can I submit the application processing fee?",
+      "query": "How can I submit the application processing fee?",
+      "matched": "How can I submit the application processing fee (online) using 1Link option?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Candidates can use the unique 17-digit 1 Bill Invoice / Consumer No. mentioned under the Fee Invoice section, to pay their fee via 1 Link service through any of the following payment modes: Mob"
+    },
+    {
+      "expected": "How can I submit the application processing fee?",
+      "query": "how can i submit the application processing fee?",
+      "matched": "How can I submit the application processing fee (online) using 1Link option?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Candidates can use the unique 17-digit 1 Bill Invoice / Consumer No. mentioned under the Fee Invoice section, to pay their fee via 1 Link service through any of the following payment modes: Mob"
+    },
+    {
+      "expected": "How can I submit the application processing fee?",
+      "query": "How can I submit the application processing fee",
+      "matched": "How can I submit the application processing fee (online) using 1Link option?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Candidates can use the unique 17-digit 1 Bill Invoice / Consumer No. mentioned under the Fee Invoice section, to pay their fee via 1 Link service through any of the following payment modes: Mob"
+    },
+    {
+      "expected": "How can I submit the application processing fee?",
+      "query": "Please tell me, How can I submit the application processing fee?",
+      "matched": "How can I submit the application processing fee (online) using 1Link option?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Candidates can use the unique 17-digit 1 Bill Invoice / Consumer No. mentioned under the Fee Invoice section, to pay their fee via 1 Link service through any of the following payment modes: Mob"
+    },
+    {
+      "expected": "How can I submit the application processing fee?",
+      "query": "Kindly guide: How can I submit the application processing fee?",
+      "matched": "How can I submit the application processing fee (online) using 1Link option?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Candidates can use the unique 17-digit 1 Bill Invoice / Consumer No. mentioned under the Fee Invoice section, to pay their fee via 1 Link service through any of the following payment modes: Mob"
+    },
+    {
+      "expected": "How can I submit the application processing fee?",
+      "query": "I need help about this: How can I submit the application processing fee?",
+      "matched": "How can I submit the application processing fee (online) using 1Link option?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Candidates can use the unique 17-digit 1 Bill Invoice / Consumer No. mentioned under the Fee Invoice section, to pay their fee via 1 Link service through any of the following payment modes: Mob"
+    },
+    {
+      "expected": "How can I submit the application processing fee?",
+      "query": "Can you clarify How can I submit the application processing fee?",
+      "matched": "How can I submit the application processing fee (online) using 1Link option?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Candidates can use the unique 17-digit 1 Bill Invoice / Consumer No. mentioned under the Fee Invoice section, to pay their fee via 1 Link service through any of the following payment modes: Mob"
+    },
+    {
+      "expected": "How can I submit the application processing fee?",
+      "query": "Could you explain: How can I submit the application processing fee?",
+      "matched": "How can I submit the application processing fee (online) using 1Link option?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Candidates can use the unique 17-digit 1 Bill Invoice / Consumer No. mentioned under the Fee Invoice section, to pay their fee via 1 Link service through any of the following payment modes: Mob"
+    },
+    {
+      "expected": "Will the admission be confirmed in case of quarterly or six-monthly payment of tuition fee?",
+      "query": "Will the admission be confirmed in case of quarterly or six-monthly payment of tuition fee please",
+      "matched": "Would the admission processing fee / security deposit be refundable in case a student does not join the University?",
+      "source": "intent_override",
+      "answer_preview": "Based on the official FAQ, The university will refund only the security deposit to the candidates who do not join the university. Admission Processing Fee is non-refundable."
+    },
+    {
+      "expected": "Does NUST cater for the pick and drop facility?",
+      "query": "Does NUST cater for the pick and drop facility?",
+      "matched": "Does NUST cater for the pick and drop facility for the students?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Pick and drop service is provided to students of Rawalpindi and Islamabad only with specified routes, for which the student has to pay separate charges. You will be guided to avail the facility"
+    },
+    {
+      "expected": "Does NUST cater for the pick and drop facility?",
+      "query": "does nust cater for the pick and drop facility?",
+      "matched": "Does NUST cater for the pick and drop facility for the students?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Pick and drop service is provided to students of Rawalpindi and Islamabad only with specified routes, for which the student has to pay separate charges. You will be guided to avail the facility"
+    },
+    {
+      "expected": "Does NUST cater for the pick and drop facility?",
+      "query": "Does NUST cater for the pick and drop facility",
+      "matched": "Does NUST cater for the pick and drop facility for the students?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Pick and drop service is provided to students of Rawalpindi and Islamabad only with specified routes, for which the student has to pay separate charges. You will be guided to avail the facility"
+    },
+    {
+      "expected": "Does NUST cater for the pick and drop facility?",
+      "query": "Please tell me, Does NUST cater for the pick and drop facility?",
+      "matched": "Does NUST cater for the pick and drop facility for the students?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Pick and drop service is provided to students of Rawalpindi and Islamabad only with specified routes, for which the student has to pay separate charges. You will be guided to avail the facility"
+    },
+    {
+      "expected": "Does NUST cater for the pick and drop facility?",
+      "query": "Kindly guide: Does NUST cater for the pick and drop facility?",
+      "matched": "Does NUST cater for the pick and drop facility for the students?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Pick and drop service is provided to students of Rawalpindi and Islamabad only with specified routes, for which the student has to pay separate charges. You will be guided to avail the facility"
+    },
+    {
+      "expected": "Does NUST cater for the pick and drop facility?",
+      "query": "I need help about this: Does NUST cater for the pick and drop facility?",
+      "matched": "Does NUST cater for the pick and drop facility for the students?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Pick and drop service is provided to students of Rawalpindi and Islamabad only with specified routes, for which the student has to pay separate charges. You will be guided to avail the facility"
+    },
+    {
+      "expected": "Does NUST cater for the pick and drop facility?",
+      "query": "Can you clarify Does NUST cater for the pick and drop facility?",
+      "matched": "Does NUST cater for the pick and drop facility for the students?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Pick and drop service is provided to students of Rawalpindi and Islamabad only with specified routes, for which the student has to pay separate charges. You will be guided to avail the facility"
+    },
+    {
+      "expected": "Does NUST cater for the pick and drop facility?",
+      "query": "Does NUST cater for the pick and drop facility please",
+      "matched": "Does NUST cater for the pick and drop facility for the students?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Pick and drop service is provided to students of Rawalpindi and Islamabad only with specified routes, for which the student has to pay separate charges. You will be guided to avail the facility"
+    },
+    {
+      "expected": "Does NUST cater for the pick and drop facility?",
+      "query": "Could you explain: Does NUST cater for the pick and drop facility?",
+      "matched": "Does NUST cater for the pick and drop facility for the students?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Pick and drop service is provided to students of Rawalpindi and Islamabad only with specified routes, for which the student has to pay separate charges. You will be guided to avail the facility"
+    },
+    {
+      "expected": "What is the fee structure for the progamme?",
+      "query": "What is the fee structure for the progamme?",
+      "matched": "What is the fee structure for MBBS progamme in NSHS?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Detailed fee structure for MBBS programme can be viewed by visiting"
+    },
+    {
+      "expected": "What is the fee structure for the progamme?",
+      "query": "what is the fee structure for the progamme?",
+      "matched": "What is the fee structure for MBBS progamme in NSHS?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Detailed fee structure for MBBS programme can be viewed by visiting"
+    },
+    {
+      "expected": "What is the fee structure for the progamme?",
+      "query": "What is the fee structure for the progamme",
+      "matched": "What is the fee structure for MBBS progamme in NSHS?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Detailed fee structure for MBBS programme can be viewed by visiting"
+    },
+    {
+      "expected": "What is the fee structure for the progamme?",
+      "query": "Please tell me, What is the fee structure for the progamme?",
+      "matched": "What is the fee structure for MBBS progamme in NSHS?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Detailed fee structure for MBBS programme can be viewed by visiting"
+    },
+    {
+      "expected": "What is the fee structure for the progamme?",
+      "query": "Kindly guide: What is the fee structure for the progamme?",
+      "matched": "What is the fee structure for MBBS progamme in NSHS?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Detailed fee structure for MBBS programme can be viewed by visiting"
+    },
+    {
+      "expected": "What is the fee structure for the progamme?",
+      "query": "I need help about this: What is the fee structure for the progamme?",
+      "matched": "What is the fee structure for MBBS progamme in NSHS?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Detailed fee structure for MBBS programme can be viewed by visiting"
+    },
+    {
+      "expected": "What is the fee structure for the progamme?",
+      "query": "Can you clarify What is the fee structure for the progamme?",
+      "matched": "What is the fee structure for MBBS progamme in NSHS?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Detailed fee structure for MBBS programme can be viewed by visiting"
+    },
+    {
+      "expected": "What is the fee structure for the progamme?",
+      "query": "What is the fee structure for the progamme please",
+      "matched": "What is the fee structure of different UG programmes?",
+      "source": "intent_override",
+      "answer_preview": "Based on the official FAQ, Please visit:"
+    },
+    {
+      "expected": "What is the fee structure for the progamme?",
+      "query": "Could you explain: What is the fee structure for the progamme?",
+      "matched": "What is the fee structure for MBBS progamme in NSHS?",
+      "source": "direct_faq_lock",
+      "answer_preview": "Based on the official FAQ, Detailed fee structure for MBBS programme can be viewed by visiting"
+    },
+    {
+      "expected": "How long is Nust Entry Test (NET)",
+      "query": "How long is Nust Entry Test (NET) please",
+      "matched": "What is the duration of test and the number of MCQs to be attempted?",
+      "source": "intent_override",
+      "answer_preview": "Based on the official FAQ, There are total 200 MCQs to be attempted in three hours (180 minutes)."
+    }
+  ]
+}
