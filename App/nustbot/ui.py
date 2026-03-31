@@ -447,7 +447,7 @@ def inject_theme(logo_path: Optional[Path]) -> None:
                 <div class="logo"></div>
                 <div class="info">
                     <div class="title">NUST Admissions Assistant</div>
-                    <div class="sub">Official NUST FAQ &middot; Instant retrieval &middot; LLM reasoning</div>
+                    <div class="sub">Official NUST FAQ &middot; Instant retrieval</div>
                 </div>
                 <div class="pill">
                     <div class="dot"></div>
