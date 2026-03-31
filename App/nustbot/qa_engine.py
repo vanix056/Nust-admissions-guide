@@ -26,33 +26,9 @@ EMBEDDING_MODEL_CANDIDATES = [
     "all-MiniLM-L6-v2",
     "all-MiniLM-L12-v2",
 ]
-MODEL_CANDIDATES = [
-    "phi-3-mini-4k-instruct-q4_K_M.gguf",
-    "Phi-3-mini-4k-instruct-q4.gguf",
-]
 TOP_K = 6
 MIN_SEMANTIC_CONF = 0.34
 MIN_FUZZY_CONF = 62
-
-# Speed controls
-FAST_RETURN_SEMANTIC = 0.66
-FAST_RETURN_FUZZY = 84
-LLM_TOP_K = 3
-LLM_MAX_TOKENS = 120
-LLM_CTX_SIZE = 2048
-LLM_LATENCY_TARGET_MS = 5000
-
-# In LLM mode, bypass generation for high-confidence retrieval hits.
-LLM_BYPASS_SEMANTIC = 0.82
-LLM_BYPASS_FUZZY = 92
-
-# Performance knobs (all are opt-in so LLM mode remains truly generative by default).
-# Set LLM_CPU_FAST_MODE=1 to force retrieval in LLM mode.
-LLM_CPU_FAST_MODE = os.getenv("LLM_CPU_FAST_MODE", "0") == "1"
-# Set LLM_BYPASS_IN_LLM_MODE=1 to allow retrieval bypass at very high confidence.
-LLM_BYPASS_IN_LLM_MODE = os.getenv("LLM_BYPASS_IN_LLM_MODE", "0") == "1"
-# Set LLM_ENFORCE_LATENCY_BUDGET=1 to force retrieval fallback when generation exceeds target latency.
-LLM_ENFORCE_LATENCY_BUDGET = os.getenv("LLM_ENFORCE_LATENCY_BUDGET", "0") == "1"
 
 UNKNOWN_MESSAGE = (
     "I could not find a reliable answer in the official NUST FAQ knowledge base. "
@@ -321,7 +297,10 @@ def embed_links_inline(answer: str, links: List[str]) -> str:
         formatted = format_answer_text(answer)
         return make_urls_clickable(formatted)
     
+    # Strip any existing "Official link(s):" section to avoid duplication
     formatted = format_answer_text(answer)
+    formatted = re.sub(r"\n*Official link\(s\):\s*$", "", formatted, flags=re.IGNORECASE).strip()
+    
     cleaned_links = []
     seen = set()
     for url in links:
@@ -725,28 +704,8 @@ def _resolve_faq_path() -> Path:
     raise FileNotFoundError("Could not locate nust_faq.json in known locations.")
 
 
-def _resolve_model_path() -> Path:
-    custom = os.getenv("LLM_MODEL_PATH", "").strip()
-    if custom and Path(custom).exists():
-        return Path(custom)
-
-    candidates: List[Path] = []
-    for name in MODEL_CANDIDATES:
-        candidates.append(Path(name))
-        candidates.append(Path("../approach2") / name)
-
-    for c in candidates:
-        if c.exists():
-            return c
-
-    raise FileNotFoundError(
-        "No GGUF model found. Place a Phi-3 GGUF file in LLM/ or approach2/, "
-        "or set LLM_MODEL_PATH environment variable."
-    )
-
-
 @st.cache_resource(show_spinner=False)
-def response_cache() -> Dict[Tuple[str, bool], Tuple[str, Dict[str, str]]]:
+def response_cache() -> Dict[str, Tuple[str, Dict[str, str]]]:
     """Simple in-memory cache for repeated normalized queries."""
     return {}
 
@@ -887,27 +846,6 @@ def build_index(questions: List[str]) -> Tuple[Dict[str, faiss.IndexFlatIP], Dic
     return indices, vectors_by_model
 
 
-@st.cache_resource(show_spinner=False)
-def load_llm():
-    from llama_cpp import Llama
-
-    model_path = _resolve_model_path()
-    # CPU-only default tuned for mid-range laptops (e.g., i5 without GPU).
-    cpu_threads = int(os.getenv("LLM_THREADS", str(max(4, min(12, (os.cpu_count() or 8))))))
-    # On macOS builds with Metal enabled, set LLM_N_GPU_LAYERS=-1 for significant speedups.
-    n_gpu_layers = int(os.getenv("LLM_N_GPU_LAYERS", "0"))
-    return Llama(
-        model_path=str(model_path),
-        n_ctx=LLM_CTX_SIZE,
-        n_threads=cpu_threads,
-        n_batch=256,
-        n_gpu_layers=n_gpu_layers,
-        f16_kv=True,
-        temperature=0,
-        verbose=False,
-    )
-
-
 def retrieve_candidate_indices(
     query_for_match: str,
     indices: Dict[str, faiss.IndexFlatIP],
@@ -1015,28 +953,6 @@ def retrieve_candidate_indices(
     return ordered, best_sem, float(best_fuzzy)
 
 
-def build_grounded_prompt(query: str, candidate_indices: List[int], entries: List[Dict[str, Any]]) -> str:
-    context_parts = []
-    for rank, idx in enumerate(candidate_indices[:LLM_TOP_K], start=1):
-        item = entries[idx]
-        # Keep context focused but sufficiently rich for synthesis.
-        short_answer = format_answer_text(item["answer"])[:900]
-        context_parts.append(f"[{rank}] Q: {item['question']}\n[{rank}] A: {short_answer}")
-
-    context = "\n\n".join(context_parts)
-    return (
-        "You are a careful NUST admissions assistant. "
-        "Use only the FAQ context.\n\n"
-        f"FAQ Context:\n{context}\n\n"
-        f"Student Question: {query}\n\n"
-        "Instructions:\n"
-        "1) Prefer item [1], but synthesize across [2]/[3] when needed.\n"
-        "2) Provide a clear, direct answer in 2-4 sentences.\n"
-        "3) If asked to compare or choose, explicitly contrast options from context.\n"
-        "4) Include no invented links.\n\n"
-        "Final Answer:"
-    )
-
 
 def _strip_generation_artifacts(text: str) -> str:
     cleaned = text
@@ -1121,39 +1037,11 @@ def split_compound_query(query: str) -> List[str]:
     return [text]
 
 
-def llm_grounded_answer(query: str, prompt: str, allowed_links: List[str]) -> str:
-    model = load_llm()
-    out = model(
-        prompt,
-        max_tokens=LLM_MAX_TOKENS,
-        temperature=0.1,
-        top_p=0.9,
-        top_k=40,
-        stop=["\n\n[", "\nQ:", "Student Question:"],
-    )
-    text = _strip_generation_artifacts(out["choices"][0]["text"].strip())
-
-    if not text:
-        return text
-
-    # Guardrail: if model emits links not present in context, reject generation.
-    generated_links = _extract_links(text)
-    allowed = set(allowed_links)
-    if any(link not in allowed for link in generated_links):
-        return ""
-
-    return format_answer_text(text)
-
-
 def _get_single_answer(
     query: str,
     index: Dict[str, faiss.IndexFlatIP],
     entries: List[Dict[str, Any]],
     questions: List[str],
-    use_llm_generation: bool = False,
-    llm_cpu_fast_mode: bool = LLM_CPU_FAST_MODE,
-    llm_bypass_in_llm_mode: bool = LLM_BYPASS_IN_LLM_MODE,
-    llm_enforce_latency_budget: bool = LLM_ENFORCE_LATENCY_BUDGET,
 ) -> Tuple[str, Dict[str, str]]:
     if not query or not query.strip():
         return "Please enter your admissions question first.", {
@@ -1248,13 +1136,7 @@ def _get_single_answer(
             "matched_question": entries[override_idx]["question"],
         }
 
-    cache_key = (
-        query_for_match,
-        use_llm_generation,
-        llm_cpu_fast_mode,
-        llm_bypass_in_llm_mode,
-        llm_enforce_latency_budget,
-    )
+    cache_key = query_for_match
     cached = response_cache().get(cache_key)
     if cached:
         return cached
@@ -1272,136 +1154,17 @@ def _get_single_answer(
 
     top_idx = candidate_indices[0] if candidate_indices else 0
 
-    # Hard latency guard for CPU-only environments: skip generation in LLM mode.
-    if use_llm_generation and llm_cpu_fast_mode:
-        final = conversationalize_answer(query, entries[top_idx]["answer"])
-        final = embed_links_inline(final, entries[top_idx].get("links", []))
-        result = (
-            final,
-            {
-                "source": "llm_cpu_fast_mode_retrieval",
-                "confidence": f"semantic={best_sem:.3f}, fuzzy={best_fuzzy:.1f}",
-                "matched_question": entries[top_idx]["question"],
-            },
-        )
-        response_cache()[cache_key] = result
-        return result
-
-    # Latency optimization in LLM mode: high-confidence retrieval should skip generation.
-    if use_llm_generation and llm_bypass_in_llm_mode and (best_sem >= LLM_BYPASS_SEMANTIC or best_fuzzy >= LLM_BYPASS_FUZZY):
-        final = conversationalize_answer(query, entries[top_idx]["answer"])
-        final = embed_links_inline(final, entries[top_idx].get("links", []))
-        result = (
-            final,
-            {
-                "source": "llm_bypassed_high_confidence",
-                "confidence": f"semantic={best_sem:.3f}, fuzzy={best_fuzzy:.1f}",
-                "matched_question": entries[top_idx]["question"],
-            },
-        )
-        response_cache()[cache_key] = result
-        return result
-
-    # Fast-path: for very confident retrieval, skip LLM generation in Fast mode only.
-    if (not use_llm_generation) and (best_sem >= FAST_RETURN_SEMANTIC or best_fuzzy >= FAST_RETURN_FUZZY):
-        final = conversationalize_answer(query, entries[top_idx]["answer"])
-        final = embed_links_inline(final, entries[top_idx].get("links", []))
-        result = (
-            final,
-            {
-                "source": "fast_retrieval",
-                "confidence": f"semantic={best_sem:.3f}, fuzzy={best_fuzzy:.1f}",
-                "matched_question": entries[top_idx]["question"],
-            },
-        )
-        response_cache()[cache_key] = result
-        return result
-
-    # Optional speed mode: skip LLM even on medium-confidence queries.
-    if not use_llm_generation:
-        final = conversationalize_answer(query, entries[top_idx]["answer"])
-        final = embed_links_inline(final, entries[top_idx].get("links", []))
-        result = (
-            final,
-            {
-                "source": "retrieval_only",
-                "confidence": f"semantic={best_sem:.3f}, fuzzy={best_fuzzy:.1f}",
-                "matched_question": entries[top_idx]["question"],
-            },
-        )
-        response_cache()[cache_key] = result
-        return result
-
-    prompt = build_grounded_prompt(query, candidate_indices, entries)
-    context_answers = [entries[i]["answer"] for i in candidate_indices[:LLM_TOP_K]]
-    allowed_links = []
-    for ans in context_answers:
-        allowed_links.extend(_extract_links(ans))
-
-    start = time.perf_counter()
-    try:
-        answer = llm_grounded_answer(query, prompt, allowed_links)
-    except Exception as exc:
-        # Graceful fallback to top retrieved FAQ answer if LLM fails.
-        answer = conversationalize_answer(query, entries[top_idx]["answer"])
-        answer = embed_links_inline(answer, entries[top_idx].get("links", []))
-        result = (answer, {
-            "source": "faq_fallback_after_llm_error",
-            "confidence": f"semantic={best_sem:.3f}, fuzzy={best_fuzzy:.1f}",
-            "matched_question": entries[top_idx]["question"],
-            "error": str(exc),
-        })
-        response_cache()[cache_key] = result
-        return result
-
-    # If generation is empty after guardrails, use top grounded FAQ.
-    if not answer:
-        fallback = conversationalize_answer(query, entries[top_idx]["answer"])
-        fallback = embed_links_inline(fallback, entries[top_idx].get("links", []))
-        result = (fallback, {
-            "source": "faq_fallback_after_guardrail",
-            "confidence": f"semantic={best_sem:.3f}, fuzzy={best_fuzzy:.1f}",
-            "matched_question": entries[top_idx]["question"],
-        })
-        response_cache()[cache_key] = result
-        return result
-
-    # Additional safety: generic fee queries should not drift to specific programs.
-    qn = normalize_text(query_for_match)
-    if _is_general_fee_structure_intent(qn) and not any(k in qn for k in ["bshnd", "mbbs", "nshs"]):
-        if any(k in normalize_text(answer) for k in ["bshnd", "mbbs", "nshs"]):
-            fallback = conversationalize_answer(query, entries[top_idx]["answer"])
-            fallback = embed_links_inline(fallback, entries[top_idx].get("links", []))
-            result = (fallback, {
-                "source": "faq_fallback_after_guardrail",
-                "confidence": f"semantic={best_sem:.3f}, fuzzy={best_fuzzy:.1f}",
-                "matched_question": entries[top_idx]["question"],
-            })
-            response_cache()[cache_key] = result
-            return result
-
-    elapsed_ms = int((time.perf_counter() - start) * 1000)
-    final = conversationalize_answer(query, answer)
+    # Always use retrieval mode (no LLM generation)
+    final = conversationalize_answer(query, entries[top_idx]["answer"])
     final = embed_links_inline(final, entries[top_idx].get("links", []))
-    result = (final, {
-        "source": "llm_grounded",
-        "confidence": f"semantic={best_sem:.3f}, fuzzy={best_fuzzy:.1f}, llm_ms={elapsed_ms}",
-        "matched_question": entries[top_idx]["question"],
-    })
-
-    # Optional latency guard: only enforce when explicitly enabled.
-    if llm_enforce_latency_budget and elapsed_ms > LLM_LATENCY_TARGET_MS:
-        fallback = conversationalize_answer(query, entries[top_idx]["answer"])
-        fallback = embed_links_inline(fallback, entries[top_idx].get("links", []))
-        result = (
-            fallback,
-            {
-                "source": "faq_fallback_after_latency_budget",
-                "confidence": f"semantic={best_sem:.3f}, fuzzy={best_fuzzy:.1f}, llm_ms={elapsed_ms}",
-                "matched_question": entries[top_idx]["question"],
-            },
-        )
-
+    result = (
+        final,
+        {
+            "source": "retrieval",
+            "confidence": f"semantic={best_sem:.3f}, fuzzy={best_fuzzy:.1f}",
+            "matched_question": entries[top_idx]["question"],
+        },
+    )
     response_cache()[cache_key] = result
     return result
 
@@ -1411,10 +1174,6 @@ def get_answer(
     index: Dict[str, faiss.IndexFlatIP],
     entries: List[Dict[str, Any]],
     questions: List[str],
-    use_llm_generation: bool = False,
-    llm_cpu_fast_mode: bool = LLM_CPU_FAST_MODE,
-    llm_bypass_in_llm_mode: bool = LLM_BYPASS_IN_LLM_MODE,
-    llm_enforce_latency_budget: bool = LLM_ENFORCE_LATENCY_BUDGET,
 ) -> Tuple[str, Dict[str, str]]:
     parts = split_compound_query(query)
     if not parts:
@@ -1424,24 +1183,19 @@ def get_answer(
             "matched_question": "",
         }
 
-    # Single question path keeps existing behavior.
+    # Single question path
     if len(parts) == 1:
         return _get_single_answer(
             parts[0],
             index,
             entries,
             questions,
-            use_llm_generation=use_llm_generation,
-            llm_cpu_fast_mode=llm_cpu_fast_mode,
-            llm_bypass_in_llm_mode=llm_bypass_in_llm_mode,
-            llm_enforce_latency_budget=llm_enforce_latency_budget,
         )
 
     # Compound path: answer each part independently, then compose.
     combined_blocks: List[str] = []
     matched = []
     confidence_items = []
-    llm_used = False
     seen_answer_blocks = set()
     for i, part in enumerate(parts, start=1):
         ans, meta = _get_single_answer(
@@ -1449,10 +1203,6 @@ def get_answer(
             index,
             entries,
             questions,
-            use_llm_generation=use_llm_generation,
-            llm_cpu_fast_mode=llm_cpu_fast_mode,
-            llm_bypass_in_llm_mode=llm_bypass_in_llm_mode,
-            llm_enforce_latency_budget=llm_enforce_latency_budget,
         )
         ans_key = normalize_text(ans)
         if ans_key in seen_answer_blocks:
@@ -1466,11 +1216,9 @@ def get_answer(
         c = meta.get("confidence", "")
         if c:
             confidence_items.append(c)
-        if meta.get("source") == "llm_grounded":
-            llm_used = True
 
     return "\n\n".join(combined_blocks), {
-        "source": "compound_llm" if llm_used else "compound_retrieval",
+        "source": "compound_retrieval",
         "confidence": " | ".join(confidence_items[:3]),
         "matched_question": " | ".join(matched[:2]),
     }
@@ -1479,27 +1227,23 @@ def get_answer(
 def source_note(meta: Dict[str, str]) -> str:
     src = meta.get("source", "")
     conf = meta.get("confidence", "")
-    if src == "llm_grounded":
-        return f"Source: LLM grounded on retrieved FAQ context ({conf})."
-    if src == "faq_fallback_after_llm_error":
-        return f"Source: Direct FAQ fallback because LLM failed ({conf})."
-    if src == "faq_fallback_after_guardrail":
-        return f"Source: Guardrailed fallback to top grounded FAQ ({conf})."
-    if src == "fast_retrieval":
-        return f"Source: Fast retrieval mode (LLM skipped) ({conf})."
-    if src == "retrieval_only":
-        return f"Source: Retrieval-only mode (LLM disabled) ({conf})."
+    if src == "direct_faq_lock":
+        return f"Source: Exact FAQ match ({conf})."
     if src == "intent_override":
         return "Source: Intent-aware exact FAQ routing."
+    if src == "retrieval":
+        return f"Source: FAQ retrieval ({conf})."
     if src == "compound_retrieval":
         return f"Source: Compound query split + retrieval mode ({conf})."
-    if src == "compound_llm":
-        return f"Source: Compound query split + LLM mode ({conf})."
     if src == "small_talk":
         return "Source: Conversational assistant behavior."
     if src == "empty_query":
         return "Source: Input validation."
-    return "Source: Not found confidently in official FAQ."
+    if src == "broad_query_guidance":
+        return "Source: Guidance for broad query."
+    if src == "unknown":
+        return f"Source: Could not find reliable match in FAQ ({conf})."
+    return "Source: Official NUST FAQ knowledge base."
 
 
 def suggest_followup_queries(

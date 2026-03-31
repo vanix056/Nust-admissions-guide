@@ -67,7 +67,7 @@ def run_eval(model_candidates: List[str], out_path: Path) -> Tuple[int, int, flo
     failures = []
 
     for c in cases:
-        ans, meta = qa.get_answer(c.query, indices, entries, questions, use_llm_generation=False)
+        ans, meta = qa.get_answer(c.query, indices, entries, questions)
         matched = meta.get("matched_question", "")
         ok = c.expected_question in matched
         if ok:

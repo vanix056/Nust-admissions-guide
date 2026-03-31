@@ -37,14 +37,6 @@ def _resolve_logo_path() -> Path | None:
     return None
 
 
-def _llm_profile_flags(profile: str) -> tuple[bool, bool, bool]:
-    if profile == "Accuracy":
-        return False, False, False
-    if profile == "Balanced":
-        return False, True, False
-    return True, True, True
-
-
 def main() -> None:
     st.set_page_config(
         page_title="NUST Admissions Assistant",
@@ -67,19 +59,12 @@ def main() -> None:
     for key, default in {
         "history":        [],
         "queued_query":   "",
-        "response_mode":  "Fast (recommended)",
-        "llm_profile":    "Accuracy",
         "composer_query": "",
-        "is_processing":  False,   # NEW: track if we're mid-answer
-        "pending_query":  "",      # NEW: query being processed right now
+        "is_processing":  False,   # Track if we're mid-answer
+        "pending_query":  "",      # Query being processed right now
     }.items():
         if key not in st.session_state:
             st.session_state[key] = default
-
-    use_llm_generation = st.session_state.response_mode == "Accurate (LLM, slower)"
-    llm_cpu_fast_mode, llm_bypass_in_llm_mode, llm_enforce_latency_budget = (
-        _llm_profile_flags(st.session_state.llm_profile)
-    )
 
     request_query = st.session_state.queued_query.strip()
     if request_query:
@@ -129,10 +114,6 @@ def main() -> None:
         # ── Now actually fetch the answer ─────────────────────────────────
         answer, meta = get_answer(
             pending, index, entries, questions,
-            use_llm_generation=use_llm_generation,
-            llm_cpu_fast_mode=llm_cpu_fast_mode,
-            llm_bypass_in_llm_mode=llm_bypass_in_llm_mode,
-            llm_enforce_latency_budget=llm_enforce_latency_budget,
         )
         suggestions = suggest_followup_queries(
             pending, index, entries, questions,
