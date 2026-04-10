@@ -456,7 +456,7 @@ torch/transformers (developmental)
 
 ```bash
 # If you have git:
-git clone https://github.com/vanix056/Nust-admissions-guide.git
+git clone https://github.com/MAbdullahWaqar/Nust-admissions-guide.git
 cd Nust-admissions-guide
 
 # Otherwise, download the ZIP file and extract it
@@ -2440,7 +2440,7 @@ The **NUST Admissions Chatbot** is a production-ready system that prioritizes **
 ---
 
 **For questions or contributions, please refer to the project repository:**  
-📍 GitHub: https://github.com/vanix056/Nust-admissions-guide
+📍 GitHub: https://github.com/MAbdullahWaqar/Nust-admissions-guide
 
 **Last updated:** March 31, 2026  
 **Maintained by:** Muhammad Abdullah Waqar  
